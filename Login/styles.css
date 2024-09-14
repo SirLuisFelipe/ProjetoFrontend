@@ -28,7 +28,7 @@ body {
 
 .password-container input {
     flex: 1;
-    padding-right: 40px; /* Espaço para o ícone */
+    padding-right: 40px; 
 }
 
 .toggle-password {
@@ -39,7 +39,7 @@ body {
 }
 
 .toggle-password img {
-    width: 24px; /* Ajuste conforme o tamanho desejado do ícone */
+    width: 24px; 
     height: 24px;
 }
 
