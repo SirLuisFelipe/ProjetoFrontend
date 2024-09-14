@@ -8,11 +8,11 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
-    background-color: black;
+    background-color: #000000;
 }
 
 .login-container {
-    background-color: #131215;
+    background-color: #1A2129;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -20,6 +20,30 @@ body {
     width: 100%;
     box-sizing: border-box;
 }
+.password-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-container input {
+    flex: 1;
+    padding-right: 40px; /* Espaço para o ícone */
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.toggle-password img {
+    width: 24px; /* Ajuste conforme o tamanho desejado do ícone */
+    height: 24px;
+}
+
+
 
 .login-container h2 {
     text-align: center;
@@ -61,6 +85,7 @@ body {
     margin-top: 10px;
     width: 100%;
     box-sizing: border-box;
+    font-size: 12px;
 }
 
 .login-container .forgot-password a {
