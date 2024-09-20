@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" href="img\IconeRelogio.png" type="image/png">
+    <link rel="shortcut icon" href="../Assets/img/IconeRelogio.png" type="image/png"> 
     <title>Tela de Login</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../Assets/css/login.css">
+
 </head>
 <body>
 
@@ -20,7 +21,7 @@
             <div class="password-container">
                 <input type="password" id="password" name="password" placeholder="Digite sua senha" required>
                 <span class="toggle-password" onclick="togglePasswordVisibility()">
-                    <img id="icon-eye" src="img/OcultarSenha.png" alt="Exibir senha">
+                    <img id="icon-eye" src="../Assets/img/login/OcultarSenha.png" alt="Exibir senha">
                 </span>
             </div>
     
@@ -38,15 +39,12 @@
     
             if (passwordField.type === "password") {
                 passwordField.type = "text";
-                icon.src = 'img/VerSenha.png'; // Visualizar senha
+                icon.src = '../Assets/img/login/VerSenha.png'; // Visualizar senha
             } else {
                 passwordField.type = "password";
-                icon.src = 'img/OcultarSenha.png'; // Ocultar senha
+                icon.src = '../Assets/img/login/OcultarSenha.png'; // Ocultar senha
             }
         }
-    </script>
-    
-
     </script>
 </body>
 </html>
