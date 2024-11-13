@@ -2,22 +2,47 @@ body {
     font-family: Arial, sans-serif;
     display: flex;
     justify-content: center;
-    box-sizing: border-box;
     align-items: center;
     height: 100vh;
     margin: 0;
     background-color: #1A2129;
+    color: #ffffff;
 }
 
 .login-container {
-    background-color: #732D2D;
-    padding: 20px;
+    background-color: #3a3d6b;
+    padding: 30px;
     border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    max-width: 400px;
-    width: 100%;
-    box-sizing: border-box;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 320px;
+    text-align: center;
 }
+
+.login-container h2 {
+    color: #ffffff;
+    margin-bottom: 20px;
+}
+
+.login-container label {
+    font-weight: bold;
+    color: #ffffff;
+    text-align: left;
+    display: block;
+    margin-top: 10px;
+}
+
+.login-container input[type="text"],
+.login-container input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 5px;
+    box-sizing: border-box;
+    background-color: #2d2f4e;
+    color: #ffffff;
+}
+
 .password-container {
     position: relative;
     display: flex;
@@ -25,8 +50,7 @@ body {
 }
 
 .password-container input {
-    flex: 1;
-    padding-right: 40px; 
+    padding-right: 40px;
 }
 
 .toggle-password {
@@ -37,28 +61,8 @@ body {
 }
 
 .toggle-password img {
-    width: 24px; 
-    height: 24px;
-}
-
-.login-container h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #ffffff;
-}
-
-.login-container label {
-    font-weight: bold;
-    color: #ffffff;
-}
-
-.login-container input {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #000000;
-    border-radius: 5px;
-    box-sizing: border-box;
+    width: 20px;
+    height: 20px;
 }
 
 .login-container button {
@@ -68,27 +72,125 @@ body {
     color: white;
     border: none;
     border-radius: 5px;
+    margin-top: 20px;
     cursor: pointer;
-    box-sizing: border-box;
+    font-weight: bold;
 }
 
 .login-container button:hover {
     background-color: #2E2E2E;
 }
 
-.login-container .forgot-password {
-    text-align: right;
-    margin-top: 10px;
-    width: 100%;
-    box-sizing: border-box;
+.forgot-password {
+    margin-top: 15px;
     font-size: 12px;
+    color: #ffffff;
 }
 
-.login-container .forgot-password a {
+.forgot-password a {
     color: #ffffff;
     text-decoration: none;
 }
 
-.login-container .forgot-password a:hover {
+.forgot-password a:hover {
     text-decoration: underline;
 }
+
+.register-link {
+    margin-top: 15px; 
+    text-align: center;
+}
+
+.register-link a {
+    color: #ffffff; 
+    text-decoration: none;
+    font-size: 14px; 
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+}
+
+
+/* Estilos do Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #3a3d6b;
+    padding: 30px;
+    border-radius: 10px;
+    width: 320px; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    color: #ffffff;
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.close {
+    color: #aaaaaa;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+    color: #ffffff;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-content label {
+    font-weight: bold;
+    display: block;
+    margin-top: 10px;
+    text-align: left;
+}
+
+.modal-content input[type="text"],
+.modal-content input[type="email"],
+.modal-content input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 5px;
+    background-color: #2d2f4e;
+    color: #ffffff;
+    box-sizing: border-box;
+}
+
+.modal-content button {
+    width: 100%;
+    padding: 10px;
+    background-color: #1A2129;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin-top: 20px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.modal-content button:hover {
+    background-color: #2E2E2E;
+}
+
