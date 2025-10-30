@@ -29,6 +29,26 @@ body {
     font-size: 16px;
 }
 
+/* Botão de busca com a mesma aparência dos botões laterais */
+#searchButton {
+    background-color: #3a3d6b;
+    color: #ffffff;
+    border: none;
+    padding: 10px 16px;
+    cursor: pointer;
+    text-align: center;
+    border-radius: 8px;
+    font-size: 16px;
+    display: block;
+    width: 100%;
+    max-width: 600px;
+    margin: 8px 0 20px 0;
+}
+
+#searchButton:hover {
+    background-color: #4a4d7a;
+}
+
 .main-content {
     flex: 1;
     padding: 20px;
@@ -45,11 +65,12 @@ h2 {
 }
 
 .search-bar {
-    width: 45%;
+    width: 100%;
+    max-width: 600px;
     padding: 12px;
     border: none;
     border-radius: 8px;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
 }
 
 .user-list {

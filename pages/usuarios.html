@@ -10,7 +10,7 @@
   <div class="sidebar">
     <button onclick="window.location.href='http://127.0.0.1:5500/Home/reserva.html'">Reservas</button>
     <button>Usuários</button>
-    <button>Ocupação</button>
+    <button>Dashboards</button>
   </div>
   <div class="main-content">
     <h2>Gerenciamento de usuário</h2>
@@ -49,7 +49,14 @@
       </form>
     </div>
   </div>
-
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var buttons = document.querySelectorAll('.sidebar button');
+      if (buttons.length > 0) {
+        buttons[0].onclick = function() { window.location.href = 'reserva.html'; };
+      }
+    });
+  </script>
   <script src="../Assets/js/usuarios.js"></script>
 </body>
 </html>

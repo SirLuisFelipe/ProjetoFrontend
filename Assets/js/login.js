@@ -25,7 +25,7 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
         localStorage.setItem("authToken", data.token); 
 
         // Redireciona para a página principal após login bem-sucedido
-        window.location.href = "/Home/reserva.html";
+        window.location.href = "reserva.html";
     } catch (error) {
         alert("Erro: " + error.message);
     }

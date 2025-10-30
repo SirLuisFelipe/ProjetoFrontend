@@ -3,7 +3,7 @@ body {
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
-    background-color: #1A2129;
+    background-color: #2D2F4E;
     color: #fff;
 }
 
@@ -14,30 +14,33 @@ body {
 
 /* Barra lateral */
 .sidebar {
-    width: 15%;
-    background-color: #2D2F4E;
+    width: 10%;
+    background-color: #1a1b33; /* harmoniza com a tela de usuários */
     display: flex;
     flex-direction: column;
     padding: 20px;
 }
 
 .sidebar-btn {
-    background-color: #1A2129;
-    color: white;
+    background-color: #3a3d6b; /* mesmo tom dos botões laterais de usuários */
+    color: #ffffff;
+    border: none;
     padding: 10px;
     margin-bottom: 10px;
-    border: none;
     cursor: pointer;
+    text-align: center;
+    border-radius: 8px;
+    font-size: 16px;
 }
 
 .sidebar-btn:hover {
-    background-color: #555;
+    background-color: #4a4d7a;
 }
 
 .main-content {
     width: 55%;
     padding: 20px;
-    background-color: #1A2129;
+    background-color: #2D2F4E;
 }
 
 h2 {
@@ -62,7 +65,7 @@ th, td {
 .calendar-container {
     width: 30%;
     padding: 20px;
-    background-color: #2D2F4E;
+    background-color: #1A1B33;
     display: flex;
     flex-direction: column;
     align-items: center;

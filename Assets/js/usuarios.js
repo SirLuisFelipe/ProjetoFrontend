@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!token) {
             alert("Token não encontrado. Faça o login novamente.");
-            window.location.href = "/Login/login.html";
+            window.location.href = "login.html";
             return;
         }
 
@@ -61,6 +61,15 @@ document.addEventListener("DOMContentLoaded", () => {
     searchButton.addEventListener("click", () => {
         const name = searchInput.value.trim();
         fetchUsers(name);
+    });
+
+    // Permitir pesquisar ao pressionar Enter no campo de busca
+    searchInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            const name = searchInput.value.trim();
+            fetchUsers(name);
+        }
     });
 
     window.openEditModal = function(id, name, cpf, email, role) {
@@ -136,7 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!token) {
             alert("Token não encontrado. Faça o login novamente.");
-            window.location.href = "/Login/login.html";
+            window.location.href = "login.html";
             return;
         }
 
