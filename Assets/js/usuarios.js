@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
         fetchUsers(name);
     });
 
-    // Permitir pesquisar ao pressionar Enter no campo de busca
+    // "enter" para executar o pesquisar
     searchInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
             event.preventDefault();
@@ -112,6 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
             role: document.getElementById("role").value
         };
 
+    // Função para editar usuário
         try {
             const response = await fetch(`http://localhost:8080/reservation/user/`, {
                 method: "PUT",
@@ -140,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("editForm").addEventListener("submit", updateUser);
 
     // Função para excluir usuário
-    async function deleteUser(userId) {
+    async function deleteUser(id) {
         const token = localStorage.getItem("authToken");
 
         if (!token) {
@@ -150,7 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const response = await fetch(`http://localhost:8080/reservation/user/${userId}`, {
+            const response = await fetch(`http://localhost:8080/reservation/user/id/${id}`, {
                 method: "DELETE",
                 headers: {
                     "Authorization": `Bearer ${token}`
@@ -170,6 +171,8 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Erro ao excluir usuário.");
         }
     }
+
+    window.deleteUser = deleteUser;
 
     // Carregar todos os usuários ao iniciar
     fetchUsers();

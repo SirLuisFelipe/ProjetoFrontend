@@ -14,8 +14,11 @@
   </div>
   <div class="main-content">
     <h2>Gerenciamento de usuário</h2>
-    <input type="text" id="searchInput" placeholder="Pesquisar" class="search-bar">
-    <button id="searchButton">Buscar</button>
+    <div class="search-row">
+      <input type="text" id="searchInput" placeholder="Pesquisar" class="search-bar">
+      <button id="searchButton" type="button">Buscar</button>
+      <button id="registerButton" type="button" onclick="openRegisterModal()">Novo usuário</button>
+    </div>
 
     <div class="user-list"> </div>
   </div>
@@ -49,6 +52,29 @@
       </form>
     </div>
   </div>
+
+  <!-- Modal de Registro (reuso do modal da tela de login) -->
+  <div id="registerModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeRegisterModal()">&times;</span>
+      <h2>Registrar Usuário</h2>
+      <form id="registerForm">
+        <label for="registerName">Nome completo</label>
+        <input type="text" id="registerName" required>
+
+        <label for="registerCpf">CPF</label>
+        <input type="text" id="registerCpf" required>
+
+        <label for="registerEmail">E-mail</label>
+        <input type="email" id="registerEmail" required>
+
+        <label for="registerPassword">Senha</label>
+        <input type="password" id="registerPassword" required>
+
+        <button type="submit">Registrar</button>
+      </form>
+    </div>
+  </div>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       var buttons = document.querySelectorAll('.sidebar button');
@@ -58,5 +84,6 @@
     });
   </script>
   <script src="../Assets/js/usuarios.js"></script>
+  <script src="../Assets/js/login.js"></script>
 </body>
 </html>
