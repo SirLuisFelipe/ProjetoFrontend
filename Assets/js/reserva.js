@@ -119,3 +119,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
+
+// Logoff e retorno à tela de login (usado no botão "Sair")
+window.logout = function() {
+    try {
+        localStorage.removeItem("authToken");
+    } catch (e) {
+        // ignora erros de storage
+    }
+    window.location.href = "login.html";
+};

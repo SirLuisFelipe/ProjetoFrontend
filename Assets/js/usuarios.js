@@ -98,6 +98,16 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("editModal").style.display = "none";
     };
 
+    // Logoff e retorno à tela de login
+    window.logout = function() {
+        try {
+            localStorage.removeItem("authToken");
+        } catch (e) {
+            // ignora erros de storage
+        }
+        window.location.href = "login.html";
+    };
+
     async function updateUser(event) {
         event.preventDefault();
 

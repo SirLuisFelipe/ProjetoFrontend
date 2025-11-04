@@ -50,7 +50,23 @@ function togglePasswordVisibility() {
 
 // Abrir o modal de registro
 function openRegisterModal() {
-    document.getElementById("registerModal").style.display = "block";
+    const modal = document.getElementById("registerModal");
+    modal.style.display = "block";
+
+    const roleSelect = document.querySelector('#registerModal #role');
+    if (roleSelect) {
+        roleSelect.innerHTML = '';
+
+        const userOpt = document.createElement('option');
+        userOpt.value = 'USER';
+        userOpt.textContent = 'Usuário';
+        roleSelect.appendChild(userOpt);
+
+        const adminOpt = document.createElement('option');
+        adminOpt.value = 'ADMIN';
+        adminOpt.textContent = 'Administrador';
+        roleSelect.appendChild(adminOpt);
+    }
 }
 
 // Fechar o modal de registro
@@ -85,12 +101,15 @@ if (registerForm) {
         const password = document.getElementById("registerPassword").value;
 
         // Role será passado como "User" por padrão quando o usuário for criado pela tela de login
+        const roleSelect = document.querySelector('#registerModal #role');
+        const selectedRole = roleSelect && roleSelect.value ? roleSelect.value : "User";
+
         const userData = {
             name: name,
             email: email,
             cpf: cpf,
             password: password,
-            role: "User"
+            role: selectedRole
         };
 
         try {
