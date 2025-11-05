@@ -151,15 +151,35 @@ th, td {
     background-color: rgba(0, 0, 0, 0.5);
 }
 
-.modal-content {
-    background-color: #2e2e2e;
-    margin: 10% auto;
-    padding: 20px;
-    border: 1px solid #555;
-    width: 400px; 
-    max-width: 90%; 
-    color: white;
-    border-radius: 8px;
+/* Modal de reserva */
+#confirmationModal {
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+}
+
+#confirmationModal .modal-content {
+    background-color: #3a3d6b;
+    padding: 30px;
+    border-radius: 10px;
+    width: 320px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    color: #ffffff;
+    text-align: left;
+    position: absolute;
+    top: 50%;
+    left: 41%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
 }
 
 .modal-content form {
@@ -180,31 +200,51 @@ th, td {
     color: #fff;
 }
 
-.form-group input[type="text"],
-.form-group input[type="email"],
-.form-group input[type="time"] {
-    width: 100%;
-    padding: 8px;
-    background-color: #444;
-    border: 1px solid #555;
-    border-radius: 5px;
-    color: #fff;
+#confirmationModal .modal-content label {
+    color: #ffffff;
 }
 
-.modal-content button {
-    width: 100%; 
+#confirmationModal .modal-content input[type="text"],
+#confirmationModal .modal-content input[type="email"],
+#confirmationModal .modal-content select {
+    width: 100%;
     padding: 10px;
-    background-color: #444;
-    border: 1px solid #555;
+    background-color: #2d2f4e;
+    border: none;
+    border-radius: 4px;
+    color: #ffffff;
+}
+
+#confirmationModal .modal-content button {
+    width: 100%;
+    padding: 10px;
+    background-color: #1A2129;
+    border: none;
     color: white;
-    border-radius: 5px;
+    border-radius: 4px;
     cursor: pointer;
     font-size: 16px;
-    margin-top: 10px; 
+    margin-top: 10px;
 }
 
-.modal-content button:hover {
-    background-color: #555;
+#confirmationModal .modal-content button:hover {
+    background-color: #2E2E2E;
+}
+
+#confirmationModal .close {
+    color: #aaaaaa;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#confirmationModal .close:hover,
+#confirmationModal .close:focus {
+    color: #ffffff;
+    text-decoration: none;
 }
 
 .time-group {
