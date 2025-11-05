@@ -141,6 +141,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return [];
     }
 
+    const schedulesById = new Map();
+
     function renderSchedules(items) {
         const tableBody = document.getElementById('schedulesBody');
         if (!tableBody) return;
@@ -157,8 +159,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         items.forEach(item => {
+            if (item && item.id != null) {
+                schedulesById.set(item.id, item);
+            }
             // Buscando valores do banco para popular a tabela
             const tr = document.createElement('tr');
+            if (item && item.id != null) {
+                try { tr.dataset.scheduleId = String(item.id); } catch (e) {}
+            }
 
             const tdName = document.createElement('td');
             const n = item?.user?.name;
@@ -177,7 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const tdTurno = document.createElement('td');
             const tu = item?.turno;
-            tdTurno.textContent = (tu === undefined || tu === null) ? '-' : tu;
+            tdTurno.textContent = displayTurno(tu);
             tr.appendChild(tdTurno);
 
             const tdDate = document.createElement('td');
@@ -187,6 +195,64 @@ document.addEventListener("DOMContentLoaded", () => {
 
             tableBody.appendChild(tr);
         });
+        renderFloatingActions();
+    }
+
+    function renderFloatingActions() {
+        const wrapper = document.querySelector('.reservation-table-wrap');
+        const table = document.getElementById('schedulesTable');
+        const body = document.getElementById('schedulesBody');
+        if (!wrapper || !table || !body) return;
+
+        let layer = document.getElementById('reservationActionsLayer');
+        if (!layer) {
+            layer = document.createElement('div');
+            layer.id = 'reservationActionsLayer';
+            layer.className = 'reservation-actions-layer';
+            wrapper.appendChild(layer);
+        }
+        layer.innerHTML = '';
+
+        const leftBase = table.offsetLeft + table.offsetWidth + 8;
+        const rows = Array.from(body.querySelectorAll('tr'));
+        rows.forEach(row => {
+            const idRaw = row.dataset ? row.dataset.scheduleId : null;
+            const id = idRaw != null ? Number(idRaw) : null;
+            if (!id && id !== 0) return;
+
+            const actions = document.createElement('div');
+            actions.className = 'floating-actions';
+            actions.style.left = leftBase + 'px';
+            const top = row.offsetTop + Math.max(0, Math.floor((row.offsetHeight - 18) / 2));
+            actions.style.top = top + 'px';
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'action-btn edit-btn';
+            editBtn.title = 'Editar';
+            const editImg = document.createElement('img');
+            editImg.src = '../Assets/img/Usuarios/editar.png';
+            editImg.alt = 'Editar';
+            editImg.className = 'icon';
+            editBtn.appendChild(editImg);
+            editBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); openEditScheduleModal(id); });
+
+            const delBtn = document.createElement('button');
+            delBtn.className = 'action-btn delete-btn';
+            delBtn.title = 'Excluir';
+            const delImg = document.createElement('img');
+            delImg.src = '../Assets/img/Usuarios/excluir.png';
+            delImg.alt = 'Excluir';
+            delImg.className = 'icon';
+            delBtn.appendChild(delImg);
+            delBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); deleteSchedule(id); });
+
+            actions.appendChild(editBtn);
+            actions.appendChild(delBtn);
+            layer.appendChild(actions);
+        });
+
+        try { window.removeEventListener('resize', renderFloatingActions); } catch(_) {}
+        window.addEventListener('resize', renderFloatingActions);
     }
 
     function formatDate(value) {
@@ -202,6 +268,15 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (_) {
             return value;
         }
+    }
+
+    function displayTurno(value) {
+        if (value === undefined || value === null) return '-';
+        const v = String(value).toUpperCase();
+        if (v.includes('MATUTINO') || v === 'MANHA' || v === 'MANHÃ') return 'Manhã';
+        if (v.includes('VESPERTINO') || v === 'TARDE') return 'Tarde';
+        if (v.includes('NOTURNO') || v === 'NOITE') return 'Noite';
+        return value;
     }
 
     // Código do calendário e outras funções
@@ -514,6 +589,192 @@ document.addEventListener("DOMContentLoaded", () => {
                 } catch (_) {}
             }
         }
+    }
+
+    // Edição/Update de reserva
+    const uiToBackendTurno = { 'MANHA': 'MATUTINO', 'TARDE': 'VESPERTINO', 'NOITE': 'NOTURNO' };
+    const backendToUiTurno = { 'MATUTINO': 'MANHA', 'VESPERTINO': 'TARDE', 'NOTURNO': 'NOITE' };
+
+    async function loadEditSelectOptions() {
+        const token = localStorage.getItem('authToken');
+        const trackSel = document.getElementById('editTrack');
+        if (!trackSel) return;
+        trackSel.innerHTML = '<option value="" disabled selected>Selecione</option>';
+
+        const baseUrl = 'http://localhost:8080/reservation';
+        try {
+            const resp = await fetch(`${baseUrl}/track/`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                const tracks = Array.isArray(data) ? data : [];
+                tracks.forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t?.id;
+                    opt.textContent = t?.name || t?.nome || `#${t?.id}`;
+                    trackSel.appendChild(opt);
+                });
+            }
+        } catch (_) {}
+    }
+
+    window.openEditScheduleModal = async function(id) {
+        if (!id && id !== 0) return;
+        const modal = document.getElementById('editScheduleModal');
+        const idInput = document.getElementById('editScheduleId');
+        const trackSel = document.getElementById('editTrack');
+        const turnoSel = document.getElementById('editTurno');
+        const dateInput = document.getElementById('editDate');
+        if (!modal || !idInput || !trackSel || !turnoSel || !dateInput) return;
+
+        const item = schedulesById.get(id);
+        if (!item) return;
+
+        await loadEditSelectOptions();
+
+        idInput.value = id;
+
+        // Preenche pista
+        const trackId = item?.track?.id ?? item?.trackId ?? '';
+        if (trackId) trackSel.value = String(trackId);
+
+        // Preenche turno
+        const uiTurno = backendToUiTurno[(item?.turno || '').toUpperCase()] || (item?.turno || '');
+        if (uiTurno) turnoSel.value = uiTurno;
+
+        // Preenche data (YYYY-MM-DD)
+        let isoDate = '';
+        const raw = item?.scheduledDate;
+        if (raw) {
+            try {
+                // tenta usar somente os 10 primeiros caracteres se vier com hora
+                isoDate = String(raw).slice(0, 10);
+                // valida
+                if (isNaN(new Date(isoDate))) {
+                    const d = new Date(raw);
+                    if (!isNaN(d)) {
+                        const mm = String(d.getMonth() + 1).padStart(2, '0');
+                        const dd = String(d.getDate()).padStart(2, '0');
+                        isoDate = `${d.getFullYear()}-${mm}-${dd}`;
+                    }
+                }
+            } catch (_) {}
+        }
+        dateInput.value = isoDate || '';
+
+        modal.style.display = 'flex';
+    }
+
+    window.closeEditScheduleModal = function() {
+        const modal = document.getElementById('editScheduleModal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    window.saveScheduleUpdate = async function() {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            alert('Sessão expirada. Faça login novamente.');
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const id = document.getElementById('editScheduleId')?.value;
+        const trackId = document.getElementById('editTrack')?.value;
+        const turno = document.getElementById('editTurno')?.value;
+        const dateIso = document.getElementById('editDate')?.value; // já no formato YYYY-MM-DD
+        if (!id || !trackId || !turno || !dateIso) {
+            alert('Preencha pista, turno e data.');
+            return;
+        }
+
+        const current = schedulesById.get(Number(id));
+        const userId = (current?.user?.id != null) ? current.user.id : getUserIdFromToken();
+        const payload = {
+            id: Number(id),
+            trackId: Number(trackId),
+            scheduledDate: dateIso,
+            turno: uiToBackendTurno[turno] || turno
+        };
+        if (userId != null) payload.userId = Number(userId);
+        // mantém paymentId atual (ou explicita null)
+        const paymentId = current?.payment?.id ?? current?.paymentId;
+        payload.paymentId = (paymentId != null) ? Number(paymentId) : null;
+
+        const baseUrl = 'http://localhost:8080/reservation';
+        try {
+            const resp = await fetch(`${baseUrl}/scheduling/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+            if (!resp.ok) {
+                const text = await resp.text();
+                throw new Error(`PUT /scheduling/ -> ${resp.status} ${resp.statusText} ${text || ''}`);
+            }
+            alert('Reserva atualizada com sucesso!');
+            window.closeEditScheduleModal();
+            try { location.reload(); } catch (_) {}
+        } catch (err) {
+            console.error(err);
+            alert('Não foi possível atualizar a reserva.');
+        }
+    }
+
+    window.deleteSchedule = async function(id) {
+        if (!id && id !== 0) return;
+        if (!confirm('Deseja realmente excluir esta reserva?')) return;
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            alert('Sessão expirada. Faça login novamente.');
+            window.location.href = 'login.html';
+            return;
+        }
+        const baseUrl = 'http://localhost:8080/reservation';
+
+        async function tryDelete(url, options) {
+            try {
+                const resp = await fetch(url, options);
+                if (resp.ok) return { ok: true };
+                const text = await resp.text();
+                return { ok: false, msg: `${resp.status} ${resp.statusText} ${text || ''}` };
+            } catch (e) {
+                return { ok: false, msg: e.message };
+            }
+        }
+
+        const commonHeaders = {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`
+        };
+
+        // Chama endpoint de delete 
+        const attempts = [
+            { url: `${baseUrl}/scheduling/${id}`, method: 'DELETE', headers: commonHeaders },
+        ];
+
+        let lastErr = '';
+        for (const a of attempts) {
+            const res = await tryDelete(a.url, { method: a.method, headers: a.headers, body: a.body });
+            if (res.ok) {
+                alert('Reserva excluída com sucesso!');
+                try { location.reload(); } catch (_) {}
+                return;
+            }
+            lastErr = `${a.method} ${a.url} -> ${res.msg}`;
+            console.warn(lastErr);
+        }
+        console.error('Falha ao excluir reserva:', lastErr);
+        alert('Não foi possível excluir a reserva.');
     }
 });
 

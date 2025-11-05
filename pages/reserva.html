@@ -17,18 +17,21 @@
 
         <div class="main-content">
             <h2>Reservas</h2>
-            <table class="reservation-table" id="schedulesTable">
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>E-mail</th>
-                        <th>Pista</th>
-                        <th>Turno</th>
-                        <th>Data</th>
-                    </tr>
-                </thead>
-                <tbody id="schedulesBody"></tbody>
-            </table>
+            <div class="reservation-table-wrap">
+                <table class="reservation-table" id="schedulesTable">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>E-mail</th>
+                            <th>Pista</th>
+                            <th>Turno</th>
+                            <th>Data</th>
+                        </tr>
+                    </thead>
+                    <tbody id="schedulesBody"></tbody>
+                </table>
+                <div id="reservationActionsLayer" class="reservation-actions-layer"></div>
+            </div>
         </div>
 
         <div class="calendar-container">
@@ -92,6 +95,41 @@
                     </select>
                 </div>
                 <button id="confirmButton" type="button" disabled onclick="confirmReservation()">Confirmar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para editar a reserva -->
+    <div id="editScheduleModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditScheduleModal()">&times;</span>
+            <h2>Editar Reserva</h2>
+            <form>
+                <input type="hidden" id="editScheduleId">
+
+                <div class="form-group">
+                    <label for="editTrack">Pista:</label>
+                    <select id="editTrack" required>
+                        <option value="" disabled selected>Selecione</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="editTurno">Turno:</label>
+                    <select id="editTurno" required>
+                        <option value="" disabled selected>Selecione</option>
+                        <option value="MANHA">Manhã</option>
+                        <option value="TARDE">Tarde</option>
+                        <option value="NOITE">Noite</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="editDate">Data:</label>
+                    <input type="date" id="editDate" required>
+                </div>
+
+                <button id="saveScheduleButton" type="button" onclick="saveScheduleUpdate()">Salvar</button>
             </form>
         </div>
     </div>
