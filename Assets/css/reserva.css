@@ -14,7 +14,7 @@ body {
 
 /* Barra lateral */
 .sidebar {
-    width: 10%;
+    width: 200px; /* padroniza com a tela de usuários */
     background-color: #1a1b33; /* harmoniza com a tela de usuários */
     display: flex;
     flex-direction: column;
@@ -38,7 +38,7 @@ body {
 }
 
 .main-content {
-    width: 50%;
+    width: 70%;
     padding: 20px;
     background-color: #2D2F4E;
 }
@@ -49,10 +49,7 @@ h2 {
     margin-bottom: 20px;
 }
 
-.reservation-table {
-    width: 90%;
-    margin: 0 auto;
-}
+/* .reservation-table {`n    width: 100%;`n    margin: 0;`n} */
 
 table {
     width: 100%;
@@ -60,15 +57,22 @@ table {
     margin-bottom: 20px;
 }
 
-.reservation-table th, .reservation-table td {
-    border: 1px solid rgba(116, 129, 148, 0.5);
+.reservation-table th{
+    border: 1px solid #1A1B33;
+    padding: 10px;
+    text-align: center;
+    color: white;
+    background-color: #3A3D6B;
+}
+
+.reservation-table td {
+    border: 1px solid#1A1B33;
     padding: 10px;
     text-align: center;
     color: white;
 }
 
 /* Coluna de acoes (nao usada; icones flutuantes) */
-
 .reservation-table .action-btn {
     background: none;
     border: none;
@@ -81,21 +85,22 @@ table {
     width: 18px;
     height: 18px;
 }
-.reservation-table-wrap { position: relative; }
-.reservation-actions-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-.floating-actions { position: absolute; display: flex; gap: 8px; }
-.floating-actions .action-btn { background: none; border: none; cursor: pointer; padding: 0; }
-.floating-actions .icon { width: 18px; height: 18px; }
-
+.reservation-table-wrap { 
+    position: relative; 
+    max-height: calc(100vh - 200px); 
+    overflow: auto; 
+    border: 1px solid #1A1B33;
+    border-radius: 5px;
+}
 
 .calendar-container {
-    width: 30%;
+    width: 20%;
     padding: 20px;
     background-color: #1A1B33;
     display: flex;
     flex-direction: column;
     align-items: center;
-    border-radius: 5px;
+    border-radius: 0px;
 }
 
 .calendar-container h3 {
@@ -106,63 +111,64 @@ table {
 .calendar-container table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
-    background-color: #1A2129; 
+    margin-top: 8px;
+    background-color: #2D2F4E;
     border-radius: 5px; 
+
 }
 
-.calendar-container th, 
-.calendar-container td {
+.calendar-container th, .calendar-container td {
     text-align: center;
-    padding: 10px;
-    border: 1px solid rgba(116, 129, 148, 0.5);
+    padding: 8px;
+    border: 1px solid #1A1B33;;
 }
 
 .calendar-container td button {
-    background-color: #1A2129; 
+    background-color: #2D2F4E;
     color: white;
-    font-size: 15px;
-    border: none;
-    padding: 10px;
+    font-size: 13px;
+    border: 1px solid #2D2F4E;
+    padding: 8px;
     width: 100%;
-    border-radius: 5px; 
+    border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
 .calendar-container td button:hover {
-    background-color: #555; 
+    background-color: #3A3D6B;
+    border: 1px solid #C3C5C5;
 }
 
 .calendar-container td button.bg-info {
-    background-color: #555; 
+    background-color: #3A3D6B;
+    border: 1px solid #C3C5C5;
 }
 
 .calendar-container th {
-    background-color: #333; 
+    background-color: #3A3D6B; 
     color: white;
-    border-radius: 5px 5px 0 0; 
+    /*border-radius: 5px 5px 0 0; */
 }
 
 .calendar-nav {
     display: flex;
     justify-content: space-between;
     width: 100%;
-    margin-top: 10px;
+    margin-top: 8px;
 }
 
 .calendar-container button {
-    background-color: #333;
+    background-color: #3A3D6B;
     color: white;
     padding: 10px;
     border: none;
     cursor: pointer;
-    border-radius: 5px; 
+    border-radius: 5px;
     font-size: 14px;
 }
-
 .calendar-container button:hover {
-    background-color: #555;
+    background-color: #C3C5C5;
 }
 
 /* Modal de edição de reserva */
@@ -178,3 +184,36 @@ table {
     flex-direction: column;
 }
 
+.calendar-container thead th:first-child { border-top-left-radius: 5px; }
+.calendar-container thead th:last-child { border-top-right-radius: 5px; }
+
+
+/* Scrollbar personalizado da área de reservas */
+/* Firefox */
+.reservation-table-wrap {
+    scrollbar-width: thin; /* auto | thin | none */
+    scrollbar-color: #3A3D6B #2D2F4E; /* thumb track */
+}
+
+/* (Chrome/Edge/Safari) */
+.reservation-table-wrap::-webkit-scrollbar {
+    width: 10px;  /* largura barra vertical */
+    height: 10px; /* altura barra horizontal */
+}
+
+.reservation-table-wrap::-webkit-scrollbar-track {
+    background: #2D2F4E; /* trilho (fundo) */
+}
+
+.reservation-table-wrap::-webkit-scrollbar-thumb {
+    background: #3A3D6B; /* barra (thumb) */
+    border-radius: 8px;
+}
+
+.reservation-table-wrap::-webkit-scrollbar-button {
+    background: #3A3D6B; /* setas nas pontas (quando visíveis) */
+}
+
+.reservation-table-wrap::-webkit-scrollbar-corner {
+    background: #2D2F4E; /* canto quando há scroll X e Y */
+}

@@ -6,7 +6,7 @@
         if (!token) return null;
         try {
             const payload = JSON.parse(atob(token.split('.')[1]));
-            const raw = payload.role ;
+            const raw = payload.role || payload.authority || (payload.authorities && payload.authorities[0]) || payload.scope || (payload.scopes && payload.scopes[0]);
             if (!raw) return null;
             const val = String(raw).toUpperCase();
             if (val.includes('ADMIN')) return 'ADMIN';
@@ -131,7 +131,7 @@
         }
 
         console.error('Falha ao carregar reservas.', lastError || 'sem detalhes');
-        tableBody.innerHTML = '<tr><td colspan="5">Erro ao carregar reservas</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan=\"6\">Erro ao carregar reservas</td></tr>';
     })();
 
     function extractItems(data) {
@@ -151,7 +151,7 @@
         if (!Array.isArray(items) || items.length === 0) {
             const tr = document.createElement('tr');
             const td = document.createElement('td');
-            td.colSpan = 5;
+            td.colSpan = 6;
             td.textContent = 'Nenhuma reserva encontrada';
             tr.appendChild(td);
             tableBody.appendChild(tr);
@@ -192,40 +192,9 @@
             const d = item?.scheduledDate
             tdDate.textContent = (d === undefined || d === null) ? '-' : formatDate(d);
             tr.appendChild(tdDate);
-
-            tableBody.appendChild(tr);
-        });
-        renderFloatingActions();
-    }
-
-    function renderFloatingActions() {
-        const wrapper = document.querySelector('.reservation-table-wrap');
-        const table = document.getElementById('schedulesTable');
-        const body = document.getElementById('schedulesBody');
-        if (!wrapper || !table || !body) return;
-
-        let layer = document.getElementById('reservationActionsLayer');
-        if (!layer) {
-            layer = document.createElement('div');
-            layer.id = 'reservationActionsLayer';
-            layer.className = 'reservation-actions-layer';
-            wrapper.appendChild(layer);
-        }
-        layer.innerHTML = '';
-
-        const leftBase = table.offsetLeft + table.offsetWidth + 8;
-        const rows = Array.from(body.querySelectorAll('tr'));
-        rows.forEach(row => {
-            const idRaw = row.dataset ? row.dataset.scheduleId : null;
-            const id = idRaw != null ? Number(idRaw) : null;
-            if (!id && id !== 0) return;
-
-            const actions = document.createElement('div');
-            actions.className = 'floating-actions';
-            actions.style.left = leftBase + 'px';
-            const top = row.offsetTop + Math.max(0, Math.floor((row.offsetHeight - 18) / 2));
-            actions.style.top = top + 'px';
-
+            // acoes dentro da tabela
+            const tdActions = document.createElement('td');
+            tdActions.className = 'actions';
             const editBtn = document.createElement('button');
             editBtn.className = 'action-btn edit-btn';
             editBtn.title = 'Editar';
@@ -234,8 +203,7 @@
             editImg.alt = 'Editar';
             editImg.className = 'icon';
             editBtn.appendChild(editImg);
-            editBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); openEditScheduleModal(id); });
-
+            editBtn.addEventListener('click', () => openEditScheduleModal(item?.id));
             const delBtn = document.createElement('button');
             delBtn.className = 'action-btn delete-btn';
             delBtn.title = 'Excluir';
@@ -244,31 +212,16 @@
             delImg.alt = 'Excluir';
             delImg.className = 'icon';
             delBtn.appendChild(delImg);
-            delBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); deleteSchedule(id); });
+            delBtn.addEventListener('click', () => deleteSchedule(item?.id));
+            tdActions.appendChild(editBtn);
+            tdActions.appendChild(delBtn);
+            tr.appendChild(tdActions);
 
-            actions.appendChild(editBtn);
-            actions.appendChild(delBtn);
-            layer.appendChild(actions);
+            tableBody.appendChild(tr);
         });
-
-        try { window.removeEventListener('resize', renderFloatingActions); } catch(_) {}
-        window.addEventListener('resize', renderFloatingActions);
     }
 
-    function formatDate(value) {
-        try {
-            const date = new Date(value);
-            if (!isNaN(date)) {
-                const dd = String(date.getDate()).padStart(2, '0');
-                const mm = String(date.getMonth() + 1).padStart(2, '0');
-                const yyyy = date.getFullYear();
-                return `${dd}/${mm}/${yyyy}`;
-            }
-            return value;
-        } catch (_) {
-            return value;
-        }
-    }
+    
 
     function displayTurno(value) {
         if (value === undefined || value === null) return '-';
@@ -293,6 +246,22 @@
         currentMonth = (currentMonth + 1) % 12;
         showCalendar(currentMonth, currentYear);
     }
+
+    function formatDate(value) {
+        try {
+            const date = new Date(value);
+            if (!isNaN(date)) {
+                const dd = String(date.getDate()).padStart(2, '0');
+                const mm = String(date.getMonth() + 1).padStart(2, '0');
+                const yyyy = date.getFullYear();
+                return `${dd}/${mm}/${yyyy}`;
+            }
+            return value;
+        } catch (_) {
+            return value;
+        }
+    }
+
 
     function previous() {
         currentYear = (currentMonth === 0) ? currentYear - 1 : currentYear;
@@ -788,3 +757,5 @@ window.logout = function() {
     }
     window.location.href = "login.html";
 };
+
+
