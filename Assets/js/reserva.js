@@ -1,12 +1,12 @@
-document.addEventListener("DOMContentLoaded", () => {
+﻿document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("authToken");
 
-    // Função para obter a role do usuário a partir do token
+    // Funcao para obter a role do usuario a partir do token
     function getUserRoleFromToken() {
         if (!token) return null;
         try {
             const payload = JSON.parse(atob(token.split('.')[1]));
-            const raw = payload.role || payload.authority || (payload.authorities && payload.authorities[0]) || payload.scope || (payload.scopes && payload.scopes[0]);
+            const raw = payload.role ;
             if (!raw) return null;
             const val = String(raw).toUpperCase();
             if (val.includes('ADMIN')) return 'ADMIN';
@@ -33,26 +33,26 @@ document.addEventListener("DOMContentLoaded", () => {
         const r = String(role).toUpperCase();
         return r.includes('ADMIN');
     }
-
-    function getUserIdFromToken() {
-        if (!token) return null;
-        try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            return payload.id || payload.userId || payload.sub || null;
-        } catch (error) {
-            return null;
-        }
-    }
-
+    
     const userRole = getUserRoleFromToken();
 
-    // Exibe/oculta botão de gerenciar usuários (se existir no DOM)
+    // Exibe/oculta botão de gerenciar usuários
     const manageUsersButton = document.getElementById("manageUsersButton");
     if (manageUsersButton) {
         if (userRole === "ADMIN") {
             manageUsersButton.style.display = "block";
         } else {
             manageUsersButton.style.display = "none";
+        }
+    }
+
+    // Exibe/oculta botão de Dashboards 
+        const ViewDashboards = document.getElementById("ViewDashboards");
+    if (ViewDashboards) {
+        if (userRole === "ADMIN") {
+            ViewDashboards.style.display = "block";
+        } else {
+            ViewDashboards.style.display = "none";
         }
     }
 
@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const baseUrl = 'http://localhost:8080/reservation';
-        // Regra para definir se deve visualizar todas reservas ou só as próprias
+        // Regra para definir se deve visualizar todas reservas ou so as proprias
         async function resolveCurrentUserId() {
             const idFromToken = getUserIdFromToken();
             if (idFromToken) return idFromToken;
@@ -279,7 +279,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return value;
     }
 
-    // Código do calendário e outras funções
+    // Código do calendario e outras funções
     let today = new Date();
     let currentMonth = today.getMonth();
     let currentYear = today.getFullYear();
@@ -347,7 +347,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const date = button.textContent;
         selectedDate.value = `${date}-${month + 1}-${year}`;
-        dateInfo.textContent = `Dia selecionado: ${date} de ${months[month]} de ${year}`;
+        dateInfo.classList.add("Text-Title-Modal");
+        dateInfo.textContent = `${date} de ${months[month]} de ${year}`;
 
         // Preenche e bloqueia os campos de Nome e Email, e carrega opções de selects
         await prefillAndLockUserFields();
@@ -426,7 +427,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const uid = getUserIdFromToken();
         const baseUrl = 'http://localhost:8080/reservation';
 
-        // Mapeia rótulos para valores do backend
+        // Mapeia rotulos para valores do backend
         const turnoMap = { 'MANHA': 'MATUTINO', 'TARDE': 'VESPERTINO', 'NOITE': 'NOTURNO' };
         const turnoBackend = turnoMap[turno] || turno;
 
@@ -591,7 +592,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Edição/Update de reserva
+    // Edicao/Update de reserva
     const uiToBackendTurno = { 'MANHA': 'MATUTINO', 'TARDE': 'VESPERTINO', 'NOITE': 'NOTURNO' };
     const backendToUiTurno = { 'MATUTINO': 'MANHA', 'VESPERTINO': 'TARDE', 'NOTURNO': 'NOITE' };
 
@@ -641,11 +642,11 @@ document.addEventListener("DOMContentLoaded", () => {
         idInput.value = id;
 
         // Preenche pista
-        const trackId = item?.track?.id ?? item?.trackId ?? '';
+        const trackId = item?.track?.id ?? '';
         if (trackId) trackSel.value = String(trackId);
 
         // Preenche turno
-        const uiTurno = backendToUiTurno[(item?.turno || '').toUpperCase()] || (item?.turno || '');
+        const uiTurno = backendToUiTurno[(item?.turno || '').toUpperCase()]; // (item?.turno || '')
         if (uiTurno) turnoSel.value = uiTurno;
 
         // Preenche data (YYYY-MM-DD)
@@ -702,7 +703,7 @@ document.addEventListener("DOMContentLoaded", () => {
             turno: uiToBackendTurno[turno] || turno
         };
         if (userId != null) payload.userId = Number(userId);
-        // mantém paymentId atual (ou explicita null)
+        // mantem paymentId atual (ou explicita null)
         const paymentId = current?.payment?.id ?? current?.paymentId;
         payload.paymentId = (paymentId != null) ? Number(paymentId) : null;
 

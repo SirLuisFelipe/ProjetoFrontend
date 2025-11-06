@@ -1,10 +1,11 @@
-<!DOCTYPE html>
-<html lang="pt">
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gerenciamento de Usuário</title>
+  <title>Gerenciamento de usuários</title>
   <link rel="stylesheet" href="../Assets/css/usuarios.css">
+  <link rel="stylesheet" href="../Assets/css/modal.css">
 </head>
 <body>
   <div class="sidebar">
@@ -14,7 +15,7 @@
     <button onclick="logout()">Sair</button>
   </div>
   <div class="main-content">
-    <h2>Gerenciamento de usuário</h2>
+    <h2>Gerenciamento de usuários</h2>
     <div class="search-row">
       <input type="text" id="searchInput" placeholder="Pesquisar" class="search-bar">
       <button id="searchButton" type="button">Buscar</button>
@@ -24,61 +25,82 @@
     <div class="user-list"> </div>
   </div>
 
-  <!-- Modal de edição -->
-  <div id="editModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeEditModal()">&times;</span>
-      <h2>Editar usuário</h2>
-      <form id="editForm">
+  <!-- Modal de edicao -->
+  <div id="editModal" class="modal c-modal">
+    <div class="modal-content c-modal__content">
+      <span class="close c-modal__close" onclick="closeEditModal()">&times;</span>
+      <h2 class="c-modal__title">Editar usuário</h2>
+      <form id="editForm" class="c-modal__form">
         <input type="hidden" id="userId">
-        <label for="name">Nome:</label>
-        <input type="text" id="name" required>
-        
-        <label for="cpf">CPF:</label>
-        <input type="text" id="cpf" required>
-        
-        <label for="email">E-mail:</label>
-        <input type="email" id="email" required>
-        
-        <label for="password">Senha:</label>
-        <input type="password" id="password">
-        
-        <label for="role">Tipo de usuário:</label>
-        <select id="role">
-          <option value="ADMIN">ADMIN</option>
-          <option value="USER">User</option>
-        </select>
-        
-        <button type="submit">Salvar</button>
+
+        <div class="form-group">
+          <label for="name" class="c-modal__label">Nome:</label>
+          <input type="text" id="name" class="c-modal__control" required>
+        </div>
+
+        <div class="form-group">
+          <label for="cpf" class="c-modal__label">CPF:</label>
+          <input type="text" id="cpf" class="c-modal__control" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email" class="c-modal__label">E-mail:</label>
+          <input type="email" id="email" class="c-modal__control" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="c-modal__label">Senha:</label>
+          <input type="password" id="password" class="c-modal__control">
+        </div>
+
+        <div class="form-group">
+          <label for="role" class="c-modal__label">Tipo de usuário:</label>
+          <select id="role" class="c-modal__control">
+            <option value="ADMIN">ADMIN</option>
+            <option value="USER">User</option>
+          </select>
+        </div>
+
+        <button type="submit" class="c-modal__button">Salvar</button>
       </form>
     </div>
   </div>
 
   <!-- Modal de Registro (reuso do modal da tela de login) -->
-  <div id="registerModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeRegisterModal()">&times;</span>
-      <h2>Registrar Usuário</h2>
-      <form id="registerForm">
-        <label for="registerName">Nome completo</label>
-        <input type="text" id="registerName" required>
+  <div id="registerModal" class="modal c-modal">
+    <div class="modal-content c-modal__content">
+      <span class="close c-modal__close" onclick="closeRegisterModal()">&times;</span>
+      <h2 class="c-modal__title">Novo Usuário</h2>
+      <form id="registerForm" class="c-modal__form">
+        <div class="form-group">
+          <label for="registerName" class="c-modal__label">Nome completo</label>
+          <input type="text" id="registerName" class="c-modal__control" required>
+        </div>
 
-        <label for="registerCpf">CPF</label>
-        <input type="text" id="registerCpf" required>
+        <div class="form-group">
+          <label for="registerCpf" class="c-modal__label">CPF</label>
+          <input type="text" id="registerCpf" class="c-modal__control" required>
+        </div>
 
-        <label for="registerEmail">E-mail</label>
-        <input type="email" id="registerEmail" required>
+        <div class="form-group">
+          <label for="registerEmail" class="c-modal__label">E-mail</label>
+          <input type="email" id="registerEmail" class="c-modal__control" required>
+        </div>
 
-        <label for="registerPassword">Senha</label>
-        <input type="password" id="registerPassword" required>
+        <div class="form-group">
+          <label for="registerPassword" class="c-modal__label">Senha</label>
+          <input type="password" id="registerPassword" class="c-modal__control" required>
+        </div>
 
-        <label for="role">Tipo de usuário:</label>
-        <select id="role">
-          <option value="ADMIN">ADMIN</option>
-          <option value="USER">User</option>
-        </select>
+        <div class="form-group">
+          <label for="role" class="c-modal__label">Tipo de usuário:</label>
+          <select id="role" class="c-modal__control">
+            <option value="ADMIN">ADMIN</option>
+            <option value="USER">User</option>
+          </select>
+        </div>
 
-        <button type="submit">Registrar</button>
+        <button type="submit" class="c-modal__button">Registrar</button>
       </form>
     </div>
   </div>
@@ -94,3 +116,5 @@
   <script src="../Assets/js/login.js"></script>
 </body>
 </html>
+
+
