@@ -1,11 +1,6 @@
-document.addEventListener("DOMContentLoaded", () => {
+﻿document.addEventListener("DOMContentLoaded", () => {
     const searchInput = document.getElementById("searchInput");
     const searchButton = document.getElementById("searchButton");
-
-    if (!searchInput || !searchButton) {
-        console.error("Campo de entrada de busca ou botão de busca não encontrado.");
-        return;
-    }
 
     async function fetchUsers(name = "") {
         const token = localStorage.getItem("authToken");
@@ -29,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             if (!response.ok) {
-                throw new Error("Erro ao buscar usuários.");
+                throw new Error("Erro ao buscar usuário.");
             }
 
             const users = await response.json();
@@ -43,10 +38,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     <span>${user.name}</span>
                     <div class="user-actions">
                         <button class="edit-btn" onclick="openEditModal(${user.id}, '${user.name}', '${user.cpf}', '${user.email}', '${user.role}')">
-                            <img src="../Assets/img/Usuarios/editar.png" alt="Editar" class="icon"/> <!-- Ícone de edição substituído -->
+                            <img src="../Assets/img/Usuarios/editar.png" alt="Editar" class="icon"/>
                         </button>
                         <button class="lock-btn" onclick="deleteUser(${user.id})">
-                            <img src="../Assets/img/Usuarios/excluir.png" alt="Excluir" class="icon"/> <!-- Ícone de exclusão substituído -->
+                            <img src="../Assets/img/Usuarios/excluir.png" alt="Excluir" class="icon"/>
                         </button>
                     </div>
                 `;
@@ -54,7 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         } catch (error) {
             console.error("Erro ao buscar usuários:", error);
-            alert("Erro ao buscar usuários.");
+            alert("Erro ao buscar usuário.");
         }
     }
 
@@ -63,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
         fetchUsers(name);
     });
 
-    // "enter" para executar o pesquisar
+    // "Enter" para executar o pesquisar
     searchInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
             event.preventDefault();
@@ -73,7 +68,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     window.openEditModal = function(id, name, cpf, email, role) {
-        document.getElementById("editModal").style.display = "block";
+        // usa display:flex para centralizar via .c-modal
+        document.getElementById("editModal").style.display = "flex";
         document.getElementById("userId").value = id;
         document.getElementById("name").value = name;
         document.getElementById("cpf").value = cpf;
@@ -98,12 +94,11 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("editModal").style.display = "none";
     };
 
-    // Logoff e retorno à tela de login
+    // Logoff e retorno para tela de login
     window.logout = function() {
         try {
             localStorage.removeItem("authToken");
         } catch (e) {
-            // ignora erros de storage
         }
         window.location.href = "login.html";
     };
@@ -122,7 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
             role: document.getElementById("role").value
         };
 
-    // Função para editar usuário
+    // Funcao para editar usuarios
         try {
             const response = await fetch(`http://localhost:8080/reservation/user/`, {
                 method: "PUT",
@@ -150,7 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("editForm").addEventListener("submit", updateUser);
 
-    // Função para excluir usuário
+    // função para excluir usuário
     async function deleteUser(id) {
         const token = localStorage.getItem("authToken");
 
@@ -184,6 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.deleteUser = deleteUser;
 
-    // Carregar todos os usuários ao iniciar
+    // Carregar todos os usuário ao iniciar
     fetchUsers();
 });
+

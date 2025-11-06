@@ -60,14 +60,14 @@ table {
     margin-bottom: 20px;
 }
 
-th, td {
-    border: 1px solid #555;
+.reservation-table th, .reservation-table td {
+    border: 1px solid rgba(116, 129, 148, 0.5);
     padding: 10px;
     text-align: center;
     color: white;
 }
 
-/* Coluna de a��es (n�o usada; �cones flutuantes) */
+/* Coluna de acoes (nao usada; icones flutuantes) */
 
 .reservation-table .action-btn {
     background: none;
@@ -115,7 +115,7 @@ th, td {
 .calendar-container td {
     text-align: center;
     padding: 10px;
-    border: 1px solid #555;
+    border: 1px solid rgba(116, 129, 148, 0.5);
 }
 
 .calendar-container td button {
@@ -165,195 +165,7 @@ th, td {
     background-color: #555;
 }
 
-/* Modal de reserva */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-}
-
-/* Modal de reserva */
-#confirmationModal {
-    background-color: rgba(0, 0, 0, 0.5);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1000;
-}
-
-#confirmationModal .modal-content {
-    background-color: #3a3d6b;
-    padding: 30px;
-    border-radius: 10px;
-    width: 320px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    color: #ffffff;
-    text-align: left;
-    position: absolute;
-    top: 50%;
-    left: 41%;
-    transform: translate(-50%, -50%);
-    font-weight: bold;
-}
-
-.modal-content form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px; 
-    padding: 0 20px; 
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 14px;
-    color: #fff;
-}
-
-#confirmationModal .modal-content label {
-    color: #ffffff;
-}
-
-#confirmationModal .modal-content input[type="text"],
-#confirmationModal .modal-content input[type="email"],
-#confirmationModal .modal-content select {
-    width: 100%;
-    padding: 10px;
-    background-color: #2d2f4e;
-    border: none;
-    border-radius: 4px;
-    color: #ffffff;
-}
-
-#confirmationModal .modal-content button {
-    width: 100%;
-    padding: 10px;
-    background-color: #1A2129;
-    border: none;
-    color: white;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    margin-top: 10px;
-}
-
-#confirmationModal .modal-content button:hover {
-    background-color: #2E2E2E;
-}
-
-#confirmationModal .close {
-    color: #aaaaaa;
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-#confirmationModal .close:hover,
-#confirmationModal .close:focus {
-    color: #ffffff;
-    text-decoration: none;
-}
-
 /* Modal de edição de reserva */
-#editScheduleModal {
-    background-color: rgba(0, 0, 0, 0.5);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1000;
-}
-
-#editScheduleModal .modal-content {
-    background-color: #3a3d6b;
-    padding: 30px;
-    border-radius: 10px;
-    width: 320px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    color: #ffffff;
-    text-align: left;
-    position: absolute;
-    top: 50%;
-    left: 41%;
-    transform: translate(-50%, -50%);
-    font-weight: bold;
-}
-
-#editScheduleModal .modal-content label {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 14px;
-    color: #ffffff;
-}
-
-#editScheduleModal .modal-content select,
-#editScheduleModal .modal-content input[type="date"] {
-    width: 100%;
-    padding: 10px;
-    margin-top: 5px;
-    border: none;
-    border-radius: 4px;
-    background-color: #2d2f4e;
-    color: #ffffff;
-}
-
-#editScheduleModal .modal-content button {
-    width: 100%;
-    padding: 10px;
-    background-color: #1A2129;
-    border: none;
-    color: white;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    margin-top: 10px;
-}
-
-#editScheduleModal .modal-content button:hover {
-    background-color: #2E2E2E;
-}
-
-#editScheduleModal .close {
-    color: #aaaaaa;
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-#editScheduleModal .close:hover,
-#editScheduleModal .close:focus {
-    color: #ffffff;
-    text-decoration: none;
-}
-
 .time-group {
     display: flex;
     justify-content: space-between;
@@ -365,12 +177,4 @@ th, td {
     display: flex;
     flex-direction: column;
 }
-
-.form-group input[readonly] {
-    background-color: #333;
-    border: 1px solid #555;
-    color: #fff;
-}
-
-
 

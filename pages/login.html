@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -6,6 +6,7 @@
     <link rel="shortcut icon" href="../Assets/img/IconeRelogio.png" type="image/png"> 
     <title>Entrar</title>
     <link rel="stylesheet" href="../Assets/css/login.css">
+    <link rel="stylesheet" href="../Assets/css/modal.css">
 </head>
 <body>
     <div class="login-container">
@@ -30,25 +31,32 @@
         </form> 
     </div>
     <!-- Modal de Registro -->
-    <div id="registerModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeRegisterModal()">&times;</span>
-            <h2>Registrar Usuário</h2>
-            <form id="registerForm">
-                
-                <label for="registerName">Nome completo</label>
-                <input type="text" id="registerName" required>
+    <div id="registerModal" class="modal c-modal">
+        <div class="modal-content c-modal__content">
+            <span class="close c-modal__close" onclick="closeRegisterModal()">&times;</span>
+            <h2 class="c-modal__title">Registrar Usuario</h2>
+            <form id="registerForm" class="c-modal__form">
+                <div class="form-group">
+                    <label for="registerName" class="c-modal__label">Nome completo</label>
+                    <input type="text" id="registerName" class="c-modal__control" required>
+                </div>
 
-                <label for="registerCpf">CPF</label>
-                <input type="text" id="registerCpf" required>
-    
-                <label for="registerEmail">E-mail</label>
-                <input type="email" id="registerEmail" required>
-    
-                <label for="registerPassword">Senha</label>
-                <input type="password" id="registerPassword" required>
-    
-                <button type="submit">Registrar</button>
+                <div class="form-group">
+                    <label for="registerCpf" class="c-modal__label">CPF</label>
+                    <input type="text" id="registerCpf" class="c-modal__control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="registerEmail" class="c-modal__label">E-mail</label>
+                    <input type="email" id="registerEmail" class="c-modal__control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="registerPassword" class="c-modal__label">Senha</label>
+                    <input type="password" id="registerPassword" class="c-modal__control" required>
+                </div>
+
+                <button type="submit" class="c-modal__button">Registrar</button>
             </form>
         </div>
     </div>
@@ -56,3 +64,5 @@
     <script src="../Assets/js/login.js"></script>
 </body>
 </html>
+
+

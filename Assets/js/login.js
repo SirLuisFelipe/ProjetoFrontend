@@ -1,4 +1,4 @@
-// Função de login (executa apenas se o formulário existir na página)
+﻿// Função de login 
 const loginForm = document.getElementById("loginForm");
 if (loginForm) {
     loginForm.addEventListener("submit", async function(event) {
@@ -7,7 +7,7 @@ if (loginForm) {
         const email = document.getElementById("username").value;
         const password = document.getElementById("password").value;
 
-        // Execução do login com o backend
+        // Executa login com o backend
         try {
             const response = await fetch("http://localhost:8080/reservation/auth/login", {
                 method: "POST",
@@ -26,7 +26,7 @@ if (loginForm) {
             const data = await response.json();
             localStorage.setItem("authToken", data.token); 
 
-            // Redireciona para a página principal após login bem-sucedido
+            // Redireciona para a pagina principal apos login bem-sucedido
             window.location.href = "reserva.html";
         } catch (error) {
             alert("Erro: " + error.message);
@@ -34,7 +34,7 @@ if (loginForm) {
     });
 }
 
-// Função para ver/ocultar senha
+// função para ver/ocultar senha
 function togglePasswordVisibility() {
     const passwordField = document.getElementById("password");
     const icon = document.getElementById("icon-eye");
@@ -51,7 +51,7 @@ function togglePasswordVisibility() {
 // Abrir o modal de registro
 function openRegisterModal() {
     const modal = document.getElementById("registerModal");
-    modal.style.display = "block";
+    modal.style.display = "flex";
 
     const roleSelect = document.querySelector('#registerModal #role');
     if (roleSelect) {
@@ -59,7 +59,7 @@ function openRegisterModal() {
 
         const userOpt = document.createElement('option');
         userOpt.value = 'USER';
-        userOpt.textContent = 'Usuário';
+        userOpt.textContent = 'Usuario';
         roleSelect.appendChild(userOpt);
 
         const adminOpt = document.createElement('option');
@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
-// Fecha o modal se clicar fora do conteúdo do modal
+// Fecha o modal se clicar fora do conteudo do modal
 window.onclick = function(event) {
     const modal = document.getElementById("registerModal");
     if (event.target === modal) {
@@ -89,7 +89,33 @@ window.onclick = function(event) {
     }
 };
 
-// Registrando um novo usuário (executa apenas se o formulário existir na página)
+// Atalhos de teclado quando o modal esta aberto
+function isRegisterModalOpen() {
+    const modal = document.getElementById('registerModal');
+    if (!modal) return false;
+    const style = window.getComputedStyle ? getComputedStyle(modal) : null;
+    return style ? style.display !== 'none' : (modal.style.display && modal.style.display !== 'none');
+}
+
+document.addEventListener('keydown', function(e) {
+    if (!isRegisterModalOpen()) return;
+    if (e.key === 'Escape') {
+        e.preventDefault();
+        closeRegisterModal();
+    } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const form = document.getElementById('registerForm');
+        if (form) {
+            if (typeof form.requestSubmit === 'function') {
+                form.requestSubmit();
+            } else {
+                form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+            }
+        }
+    }
+});
+
+// Registrando um novo usuario 
 const registerForm = document.getElementById("registerForm");
 if (registerForm) {
     registerForm.addEventListener("submit", async function(event) {
@@ -100,7 +126,7 @@ if (registerForm) {
         const email = document.getElementById("registerEmail").value;
         const password = document.getElementById("registerPassword").value;
 
-        // Role será passado como "User" por padrão quando o usuário for criado pela tela de login
+        // Role sera passado como "User" por padrao quando o usuario for criado pela tela de login
         const roleSelect = document.querySelector('#registerModal #role');
         const selectedRole = roleSelect && roleSelect.value ? roleSelect.value : "User";
 
@@ -128,9 +154,10 @@ if (registerForm) {
             }
 
             alert("Usuário registrado com sucesso!");
-            closeRegisterModal(); // Fecha o modal após o sucesso
+            closeRegisterModal(); // Fecha o modal apos o sucesso
         } catch (error) {
             alert("Erro: " + error.message);
         }
     });
 }
+

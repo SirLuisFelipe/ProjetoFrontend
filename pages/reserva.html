@@ -1,17 +1,19 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reservas de Pistas</title>
     <link rel="stylesheet" href="../Assets/css/reserva.css">
+    <link rel="stylesheet" href="../Assets/css/modal.css">
 </head>
 
 <body>
     <div class="container">
         <div class="sidebar">
             <button class="sidebar-btn">Reservas</button>
-            <button class="sidebar-btn" onclick="window.location.href='http://127.0.0.1:5500/Usuarios/usuarios.html'" >Usuários</button>
+            <button id="manageUsersButton" class="sidebar-btn" onclick="window.location.href='http://127.0.0.1:5500/Usuarios/usuarios.html'" >Usuarios</button>
+            <button id="ViewDashboards" class="sidebar-btn">Dashboards</button>
             <button class="sidebar-btn" onclick="logout()">Sair</button>
         </div>
 
@@ -45,7 +47,7 @@
                         <th>Qua</th>
                         <th>Qui</th>
                         <th>Sex</th>
-                        <th>Sáb</th>
+                        <th>Sab</th>
                     </tr>
                 </thead>
                 <tbody id="calendarBody"></tbody>
@@ -58,65 +60,65 @@
     </div>
 
     <!-- Modal para inserir a reserva -->
-    <div id="confirmationModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2>Confirmar Reserva</h2>
-            <form>
+    <div id="confirmationModal" class="modal c-modal">
+        <div class="modal-content c-modal__content">
+            <span class="close c-modal__close" onclick="closeModal()">&times;</span>
+            <h2 class="c-modal__title">Confirmar Reserva</h2>
+            <form class="c-modal__form">
                 <p id="dateInfo"></p>
                 <input type="hidden" id="selectedDate">
                 <div class="form-group">
-                    <label for="name">Nome:</label>
-                    <input type="text" id="name" required>
+                    <label for="name" class="c-modal__label">Nome:</label>
+                    <input type="text" id="name" class="c-modal__control" required>
                 </div>
                 <div class="form-group">
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" required>
+                    <label for="email" class="c-modal__label">Email:</label>
+                    <input type="email" id="email" class="c-modal__control" required>
                 </div>
                 <div class="form-group">
-                    <label for="track">Pista:</label>
-                    <select id="track" required>
+                    <label for="track" class="c-modal__label">Pista:</label>
+                    <select id="track" class="c-modal__control" required>
                         <option value="" disabled selected>Selecione</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="payment">Pagamento:</label>
-                    <select id="payment" required>
+                    <label for="payment" class="c-modal__label">Pagamento:</label>
+                    <select id="payment" class="c-modal__control" required>
                         <option value="" disabled selected>Selecione</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="turno">Turno:</label>
-                    <select id="turno" required>
+                    <label for="turno" class="c-modal__label">Turno:</label>
+                    <select id="turno" class="c-modal__control" required>
                         <option value="" disabled selected>Selecione</option>
                         <option value="MANHA">Manhã</option>
                         <option value="TARDE">Tarde</option>
                         <option value="NOITE">Noite</option>
                     </select>
                 </div>
-                <button id="confirmButton" type="button" disabled onclick="confirmReservation()">Confirmar</button>
+                <button id="confirmButton" type="button" class="c-modal__button" disabled onclick="confirmReservation()">Confirmar</button>
             </form>
         </div>
     </div>
 
     <!-- Modal para editar a reserva -->
-    <div id="editScheduleModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeEditScheduleModal()">&times;</span>
-            <h2>Editar Reserva</h2>
-            <form>
+    <div id="editScheduleModal" class="modal c-modal">
+        <div class="modal-content c-modal__content">
+            <span class="close c-modal__close" onclick="closeEditScheduleModal()">&times;</span>
+            <h2 class="c-modal__title">Editar Reserva</h2>
+            <form class="c-modal__form">
                 <input type="hidden" id="editScheduleId">
 
                 <div class="form-group">
-                    <label for="editTrack">Pista:</label>
-                    <select id="editTrack" required>
+                    <label for="editTrack" class="c-modal__label">Pista:</label>
+                    <select id="editTrack" class="c-modal__control" required>
                         <option value="" disabled selected>Selecione</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="editTurno">Turno:</label>
-                    <select id="editTurno" required>
+                    <label for="editTurno" class="c-modal__label">Turno:</label>
+                    <select id="editTurno" class="c-modal__control" required>
                         <option value="" disabled selected>Selecione</option>
                         <option value="MANHA">Manhã</option>
                         <option value="TARDE">Tarde</option>
@@ -125,11 +127,11 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="editDate">Data:</label>
-                    <input type="date" id="editDate" required>
+                    <label for="editDate" class="c-modal__label">Data:</label>
+                    <input type="date" id="editDate" class="c-modal__control" required>
                 </div>
 
-                <button id="saveScheduleButton" type="button" onclick="saveScheduleUpdate()">Salvar</button>
+                <button id="saveScheduleButton" type="button" class="c-modal__button" onclick="saveScheduleUpdate()">Salvar</button>
             </form>
         </div>
     </div>
@@ -144,3 +146,10 @@
     <script src="../Assets/js/reserva.js"></script>
 </body>
 </html>
+
+
+
+
+
+
+
