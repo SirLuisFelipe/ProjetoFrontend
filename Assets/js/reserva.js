@@ -223,7 +223,7 @@
 
     
 
-    function displayTurno(value) {
+            function displayTurno(value) {
         if (value === undefined || value === null) return '-';
         const v = String(value).toUpperCase();
         if (v.includes('MATUTINO') || v === 'MANHA' || v === 'MANHÃ') return 'Manhã';
@@ -232,7 +232,7 @@
         return value;
     }
 
-    // Código do calendario e outras funções
+        // Código do calendario e outras funções
     let today = new Date();
     let currentMonth = today.getMonth();
     let currentYear = today.getFullYear();
@@ -262,7 +262,6 @@
         }
     }
 
-
     function previous() {
         currentYear = (currentMonth === 0) ? currentYear - 1 : currentYear;
         currentMonth = (currentMonth === 0) ? 11 : currentMonth - 1;
@@ -270,40 +269,39 @@
     }
 
     function showCalendar(month, year) {
-        let firstDay = (new Date(year, month)).getDay();
-        let daysInMonth = 32 - new Date(year, month, 32).getDate();
-        let tbl = document.getElementById("calendarBody");
-
+        const firstDay = new Date(year, month).getDay();
+        const daysInMonth = 32 - new Date(year, month, 32).getDate();
+        const tbl = document.getElementById("calendarBody");
+        if (!tbl) return;
         tbl.innerHTML = "";
         monthAndYear.innerHTML = months[month] + " " + year;
 
         let date = 1;
         for (let i = 0; i < 6; i++) {
-            let row = document.createElement("tr");
-
+            const row = document.createElement("tr");
             for (let j = 0; j < 7; j++) {
                 if (i === 0 && j < firstDay) {
-                    let cell = document.createElement("td");
-                    let cellText = document.createTextNode("");
-                    cell.appendChild(cellText);
+                    const cell = document.createElement("td");
                     row.appendChild(cell);
                 } else if (date > daysInMonth) {
-                    break;
+                    const cell = document.createElement("td");
+                    row.appendChild(cell);
                 } else {
-                    let cell = document.createElement("td");
-                    let cellButton = document.createElement("button");
-                    cellButton.textContent = date;
-                    cellButton.className = "calendar-btn";
-                    cellButton.addEventListener("click", (event) => openModal(event.target, month, year));
+                    const cell = document.createElement("td");
+                    const btn = document.createElement("button");
+                    btn.textContent = date;
+                    btn.className = "calendar-btn";
+                    btn.addEventListener("click", (event) => openModal(event.target, month, year));
                     if (date === today.getDate() && year === today.getFullYear() && month === today.getMonth()) {
-                        cellButton.classList.add("bg-info");
+                        btn.classList.add("bg-info");
                     }
-                    cell.appendChild(cellButton);
+                    cell.appendChild(btn);
                     row.appendChild(cell);
                     date++;
                 }
             }
             tbl.appendChild(row);
+            if (date > daysInMonth) break;
         }
     }
 
@@ -746,6 +744,9 @@
         console.error('Falha ao excluir reserva:', lastErr);
         alert('Não foi possível excluir a reserva.');
     }
+
+    // expor navegacao do calendario para onclick do HTML
+    try { window.next = next; window.previous = previous; } catch (_) {}
 });
 
 // Logoff e retorno à tela de login (usado no botão "Sair")
@@ -757,5 +758,7 @@ window.logout = function() {
     }
     window.location.href = "login.html";
 };
+
+
 
 

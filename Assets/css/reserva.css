@@ -153,10 +153,9 @@ table {
 
 .calendar-nav {
     display: flex;
-    justify-content: space-between;
     width: 100%;
     margin-top: 8px;
-}
+    gap: 8px; /* pequeno espaçamento entre os botões */}
 
 .calendar-container button {
     background-color: #3A3D6B;
@@ -217,3 +216,7 @@ table {
 .reservation-table-wrap::-webkit-scrollbar-corner {
     background: #2D2F4E; /* canto quando há scroll X e Y */
 }
+/* Botões de navegação ocupam toda a largura disponível */
+.calendar-nav button {    
+    flex: 1 1 0;    
+    width: 100%;}
