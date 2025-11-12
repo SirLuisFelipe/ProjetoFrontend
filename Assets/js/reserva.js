@@ -239,11 +239,112 @@
     let months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
     let monthAndYear = document.getElementById("monthAndYear");
 
+    // Estado de seleção do calendário
+    let selectedDay = null;
+    let selectedMonth = null;
+    let selectedYear = null;
+    let selectedButton = null;
+    const openScheduleButton = document.getElementById('openScheduleButton');
+
+    function isPastDate(day, month, year) {
+        try {
+            const dSel = new Date(year, month, day, 0, 0, 0, 0);
+            const dNow = new Date();
+            const dToday = new Date(dNow.getFullYear(), dNow.getMonth(), dNow.getDate(), 0, 0, 0, 0);
+            return dSel.getTime() < dToday.getTime();
+        } catch (_) {
+            return false;
+        }
+    }
+
+    function updateOpenButtonState() {
+        if (openScheduleButton) {
+            const hasSelection = (selectedDay !== null && selectedMonth !== null && selectedYear !== null);
+            const past = hasSelection ? isPastDate(selectedDay, selectedMonth, selectedYear) : false;
+            openScheduleButton.disabled = !hasSelection || past;
+        }
+    }
+
+    function clearSelection() {
+        selectedDay = null;
+        selectedMonth = null;
+        selectedYear = null;
+        if (selectedButton && selectedButton.classList) {
+            selectedButton.classList.remove('selected');
+        }
+        selectedButton = null;
+        updateOpenButtonState();
+    }
+
+    function selectCalendarDay(button, day, month, year) {
+        if (selectedButton && selectedButton.classList) {
+            selectedButton.classList.remove('selected');
+            selectedButton.classList.remove('bg-info');
+        }
+        selectedButton = button;
+        if (selectedButton && selectedButton.classList) {
+            selectedButton.classList.add('selected');
+            if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                selectedButton.classList.add('bg-info');
+            }
+        }
+        selectedDay = day;
+        selectedMonth = month;
+        selectedYear = year;
+        updateOpenButtonState();
+    }
+
+    async function openModalForDate(day, month, year) {
+        // Bloqueia modal para datas passadas
+        if (isPastDate(day, month, year)) {
+            alert('Data anterior a hoje. Selecione outra data.');
+            return;
+        }
+        const modal = document.getElementById("confirmationModal");
+        const dateInfo = document.getElementById("dateInfo");
+        const selectedDate = document.getElementById("selectedDate");
+        if (!modal || !dateInfo || !selectedDate) return;
+
+        const mHuman = month + 1;
+        selectedDate.value = `${day}-${mHuman}-${year}`;
+        dateInfo.classList.add("Text-Title-Modal");
+        dateInfo.textContent = `${day} de ${months[month]} de ${year}`;
+
+        await prefillAndLockUserFields();
+        await loadSelectOptions();
+        applyTurnoRestrictions(day, month, year);
+        setupConfirmButtonState();
+
+        modal.style.display = "flex";
+    }
+
+    // Clique no botão "Realizar agendamento"
+    if (openScheduleButton) {
+        openScheduleButton.addEventListener('click', async () => {
+            if (selectedDay === null || selectedMonth === null || selectedYear === null) {
+                alert('Selecione um dia no calendário.');
+                return;
+            }
+            if (isPastDate(selectedDay, selectedMonth, selectedYear)) {
+                alert('Data anterior a hoje. Selecione outra data.');
+                return;
+            }
+            await openModalForDate(selectedDay, selectedMonth, selectedYear);
+        });
+    }
+
+    // Seleciona o dia atual por padrão
+    selectedDay = today.getDate();
+    selectedMonth = currentMonth;
+    selectedYear = currentYear;
+
+    updateOpenButtonState();
     showCalendar(currentMonth, currentYear);
 
     function next() {
         currentYear = (currentMonth === 11) ? currentYear + 1 : currentYear;
         currentMonth = (currentMonth + 1) % 12;
+        clearSelection();
         showCalendar(currentMonth, currentYear);
     }
 
@@ -265,6 +366,7 @@
     function previous() {
         currentYear = (currentMonth === 0) ? currentYear - 1 : currentYear;
         currentMonth = (currentMonth === 0) ? 11 : currentMonth - 1;
+        clearSelection();
         showCalendar(currentMonth, currentYear);
     }
 
@@ -291,9 +393,16 @@
                     const btn = document.createElement("button");
                     btn.textContent = date;
                     btn.className = "calendar-btn";
-                    btn.addEventListener("click", (event) => openModal(event.target, month, year));
-                    if (date === today.getDate() && year === today.getFullYear() && month === today.getMonth()) {
+                    const thisDay = date; // captura o valor do dia atual
+                    btn.addEventListener("click", (event) => selectCalendarDay(event.target, thisDay, month, year));
+                    const isToday = (date === today.getDate() && year === today.getFullYear() && month === today.getMonth());
+                    if (isToday && (selectedDay === null || (selectedDay === thisDay && selectedMonth === month && selectedYear === year))) {
                         btn.classList.add("bg-info");
+                    }
+                    // Se este dia já está selecionado (ex: re-render), reatribuir classe
+                    if (selectedDay === thisDay && selectedMonth === month && selectedYear === year) {
+                        btn.classList.add('selected');
+                        selectedButton = btn;
                     }
                     cell.appendChild(btn);
                     row.appendChild(cell);
@@ -305,26 +414,43 @@
         }
     }
 
-    // Abre o modal de confirmação ao clicar em um dia
+    // (Fluxo antigo removido: abrir diretamente ao clicar no dia)
 
-    async function openModal(button, month, year) {
-        const modal = document.getElementById("confirmationModal");
-        const dateInfo = document.getElementById("dateInfo");
-        const selectedDate = document.getElementById("selectedDate");
+    function applyTurnoRestrictions(day, month, year) {
+        const turnoSel = document.getElementById('turno');
+        if (!turnoSel) return;
 
-        const date = button.textContent;
-        selectedDate.value = `${date}-${month + 1}-${year}`;
-        dateInfo.classList.add("Text-Title-Modal");
-        dateInfo.textContent = `${date} de ${months[month]} de ${year}`;
+        // Reabilita todas as opções inicialmente
+        const optManha = turnoSel.querySelector('option[value="MANHA"]');
+        const optTarde = turnoSel.querySelector('option[value="TARDE"]');
+        const optNoite = turnoSel.querySelector('option[value="NOITE"]');
+        [optManha, optTarde, optNoite].forEach(opt => { if (opt) opt.disabled = false; });
 
-        // Preenche e bloqueia os campos de Nome e Email, e carrega opções de selects
-        await prefillAndLockUserFields();
-        await loadSelectOptions();
+        // Se não for hoje, todas opções válidas
+        const now = new Date();
+        const isToday = (year === now.getFullYear() && month === now.getMonth() && day === now.getDate());
+        if (!isToday) {
+            return;
+        }
 
-        // Ajusta estado do botão Confirmar conforme seleção
-        setupConfirmButtonState();
+        const h = now.getHours();
+        const m = now.getMinutes();
+        const after12 = (h > 12) || (h === 12 && m > 0);
+        const after18 = (h > 18) || (h === 18 && m > 0);
 
-        modal.style.display = "flex"; // usa flex para centralizar
+        // >18h: apenas Noite
+        if (after18) {
+            if (optManha) optManha.disabled = true;
+            if (optTarde) optTarde.disabled = true;
+        } else if (after12) {
+            // >12h: Tarde e Noite
+            if (optManha) optManha.disabled = true;
+        }
+
+        // Se a opção atualmente selecionada ficou desabilitada, limpa seleção
+        if (turnoSel.value && turnoSel.selectedOptions && turnoSel.selectedOptions[0]?.disabled) {
+            turnoSel.value = '';
+        }
     }
 
     // expõe globalmente para o onclick do HTML funcionar

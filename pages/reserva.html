@@ -11,14 +11,14 @@
 <body>
     <div class="container">
         <div class="sidebar">
-            <button class="sidebar-btn">Reservas</button>
+            <button class="sidebar-btn">Agendamentos</button>
             <button id="manageUsersButton" class="sidebar-btn" onclick="window.location.href='http://127.0.0.1:5500/Usuarios/usuarios.html'" >Usuarios</button>
             <button id="ViewDashboards" class="sidebar-btn">Dashboards</button>
             <button class="sidebar-btn" onclick="logout()">Sair</button>
         </div>
 
         <div class="main-content">
-            <h2>Reservas</h2>
+            <h2>Meus agendamentos</h2>
             <div class="reservation-table-wrap">
                 <table class="reservation-table" id="schedulesTable">
                     <thead>
@@ -37,7 +37,7 @@
         </div>
 
         <div class="calendar-container">
-            <h3 id="monthAndYear"></h3>
+            <h2 id="monthAndYear"></h2>
             <table>
                 <thead>
                     <tr>
@@ -56,6 +56,9 @@
                 <button id="previous" onclick="previous()">&#8249;</button>
                 <button id="next" onclick="next()">&#8250;</button>
             </div>
+            <button id="openScheduleButton" type="button" class="open-schedule-btn" disabled>
+                Realizar agendamento
+            </button>
         </div>
     </div>
 
