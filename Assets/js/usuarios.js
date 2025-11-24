@@ -38,10 +38,10 @@
                     <span>${user.name}</span>
                     <div class="user-actions">
                         <button class="edit-btn" onclick="openEditModal(${user.id}, '${user.name}', '${user.cpf}', '${user.email}', '${user.role}')">
-                            <img src="../Assets/img/Usuarios/editar.png" alt="Editar" class="icon"/>
+                            <img src="../Assets/img/Icones genericos/Editar22.png" alt="Editar" class="icon"/>
                         </button>
                         <button class="lock-btn" onclick="deleteUser(${user.id})">
-                            <img src="../Assets/img/Usuarios/excluir.png" alt="Excluir" class="icon"/>
+                            <img src="../Assets/img/Icones genericos/Excluir22.png" alt="Excluir" class="icon"/>
                         </button>
                     </div>
                 `;

@@ -40,6 +40,13 @@
   text-align: center;
 }
 
+.c-modal__description {
+  font-size: 14px;
+  color: var(--modal-fg);
+  text-align: center;
+  margin: 0 0 16px 0;
+}
+
 .c-modal__form {
     display: flex;
     flex-direction: column;
@@ -118,4 +125,19 @@
     color: var(--modal-fg);
     margin-bottom: 20px;
     text-align: center;
+}
+
+.checkin-modal__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.checkin-modal__button--secondary {
+  background-color: #5a5d85;
+}
+
+.checkin-modal__button--secondary:hover {
+  background-color: #6a6da0;
 }

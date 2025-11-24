@@ -1,6 +1,8 @@
 ﻿document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("authToken");
 
+    const API_BASE_URL = 'http://localhost:8080/reservation';
+
     // Funcao para obter a role do usuario a partir do token
     function getUserRoleFromToken() {
         if (!token) return null;
@@ -28,6 +30,16 @@
         }
     }
 
+    function getUserNameFromToken() {
+        if (!token) return null;
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            return payload.name || payload.nome || payload.userName || payload.username || null;
+        } catch (error) {
+            return null;
+        }
+    }
+
     function isAdminRole(role) {
         if (!role) return false;
         const r = String(role).toUpperCase();
@@ -35,6 +47,7 @@
     }
     
     const userRole = getUserRoleFromToken();
+    const cachedUserName = getUserNameFromToken();
 
     // Exibe/oculta botão de gerenciar usuários
     const manageUsersButton = document.getElementById("manageUsersButton");
@@ -66,7 +79,7 @@
             return;
         }
 
-        const baseUrl = 'http://localhost:8080/reservation';
+        const baseUrl = API_BASE_URL;
         // Regra para definir se deve visualizar todas reservas ou so as proprias
         async function resolveCurrentUserId() {
             const idFromToken = getUserIdFromToken();
@@ -131,7 +144,7 @@
         }
 
         console.error('Falha ao carregar reservas.', lastError || 'sem detalhes');
-        tableBody.innerHTML = '<tr><td colspan=\"6\">Erro ao carregar reservas</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan=\"7\">Erro ao carregar reservas</td></tr>';
     })();
 
     function extractItems(data) {
@@ -149,16 +162,26 @@
         tableBody.innerHTML = '';
 
         if (!Array.isArray(items) || items.length === 0) {
+            handleCheckinQueue([]);
             const tr = document.createElement('tr');
             const td = document.createElement('td');
-            td.colSpan = 6;
+            td.colSpan = 7;
             td.textContent = 'Nenhuma reserva encontrada';
             tr.appendChild(td);
             tableBody.appendChild(tr);
             return;
         }
 
-        items.forEach(item => {
+        const sortedItems = items.slice().sort((a, b) => {
+            const keyA = getDateKey(a?.scheduledDate);
+            const keyB = getDateKey(b?.scheduledDate);
+            if (!keyA && !keyB) return 0;
+            if (!keyA) return 1;
+            if (!keyB) return -1;
+            return keyA.localeCompare(keyB);
+        });
+
+        sortedItems.forEach(item => {
             if (item && item.id != null) {
                 schedulesById.set(item.id, item);
             }
@@ -188,6 +211,11 @@
             tdTurno.textContent = displayTurno(tu);
             tr.appendChild(tdTurno);
 
+            const tdCheckin = document.createElement('td');
+            const ck = getCheckinStatus(item);
+            tdCheckin.textContent = formatCheckinStatus(ck);
+            tr.appendChild(tdCheckin);
+
             const tdDate = document.createElement('td');
             const d = item?.scheduledDate
             tdDate.textContent = (d === undefined || d === null) ? '-' : formatDate(d);
@@ -199,7 +227,7 @@
             editBtn.className = 'action-btn edit-btn';
             editBtn.title = 'Editar';
             const editImg = document.createElement('img');
-            editImg.src = '../Assets/img/Usuarios/editar.png';
+            editImg.src = '../Assets/img/Icones genericos/Editar22.png';
             editImg.alt = 'Editar';
             editImg.className = 'icon';
             editBtn.appendChild(editImg);
@@ -208,7 +236,7 @@
             delBtn.className = 'action-btn delete-btn';
             delBtn.title = 'Excluir';
             const delImg = document.createElement('img');
-            delImg.src = '../Assets/img/Usuarios/excluir.png';
+            delImg.src = '../Assets/img/Icones genericos/Excluir22.png';
             delImg.alt = 'Excluir';
             delImg.className = 'icon';
             delBtn.appendChild(delImg);
@@ -219,6 +247,233 @@
 
             tableBody.appendChild(tr);
         });
+
+        handleCheckinQueue(items);
+    }
+
+    function getCheckinStatus(schedule) {
+        if (schedule.checkinStatus !== undefined && schedule.checkinStatus !== null) return schedule.checkinStatus;
+        return undefined;
+    }
+
+    function formatCheckinStatus(value) {
+        if (value === undefined || value === null || value === '') return '-';
+        const normalized = String(value).toUpperCase();
+        if (normalized === 'PENDENTE') return 'Pendente';
+        if (normalized === 'NAO_REALIZADO') return 'Não Realizado';
+        if (normalized === 'REALIZADO') return 'Realizado';
+        if (normalized === 'CANCELADO') return 'Cancelado';
+        return value;
+    }
+
+    function getDateKey(value) {
+        if (!value) return null;
+        const pad = num => String(num).padStart(2, '0');
+        try {
+            if (typeof value === 'string') {
+                const cleaned = value.split('T')[0].split(' ')[0];
+                const dashParts = cleaned.split('-');
+                if (dashParts.length === 3) {
+                    if (dashParts[0].length === 4) {
+                        const [yyyy, mm, dd] = dashParts;
+                        return `${yyyy}-${pad(mm)}-${pad(dd)}`;
+                    }
+                    if (dashParts[2].length === 4) {
+                        const [dd, mm, yyyy] = dashParts;
+                        return `${yyyy}-${pad(mm)}-${pad(dd)}`;
+                    }
+                }
+                const slashParts = cleaned.split('/');
+                if (slashParts.length === 3) {
+                    const [dd, mm, yyyy] = slashParts;
+                    return `${yyyy}-${pad(mm)}-${pad(dd)}`;
+                }
+            }
+            if (value instanceof Date) {
+                if (isNaN(value)) return null;
+                return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}`;
+            }
+            const asDate = new Date(value);
+            if (!isNaN(asDate)) {
+                return `${asDate.getFullYear()}-${pad(asDate.getMonth() + 1)}-${pad(asDate.getDate())}`;
+            }
+        } catch (_) {
+            return null;
+        }
+        return null;
+    }
+
+    function getTodayKey() {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        return getDateKey(now);
+    }
+
+    function handleCheckinQueue(items) {
+        if (!checkinPromptModal) {
+            requireCheckinResolution = false;
+            pendingCheckinQueue = [];
+            return;
+        }
+
+        pendingCheckinQueue = [];
+        const todayKey = getTodayKey();
+        const currentUserId = getUserIdFromToken();
+        if (Array.isArray(items) && todayKey) {
+            items.forEach(item => {
+                const scheduleKey = getDateKey(item?.scheduledDate);
+                if (scheduleKey !== todayKey) return;
+                if (currentUserId != null) {
+                    const ownerId = item?.user?.id;
+                    if (ownerId != null && Number(ownerId) !== Number(currentUserId)) return;
+                }
+                const rawStatus = getCheckinStatus(item);
+                const normalized = (rawStatus === undefined || rawStatus === null || rawStatus === '')
+                    ? 'PENDENTE'
+                    : String(rawStatus).toUpperCase();
+                if (normalized === 'PENDENTE') {
+                    pendingCheckinQueue.push(item);
+                }
+            });
+        }
+
+        requireCheckinResolution = pendingCheckinQueue.length > 0;
+        if (requireCheckinResolution) {
+            showNextCheckinPrompt();
+        } else {
+            closeCheckinPromptModal();
+        }
+        updateOpenButtonState();
+    }
+
+    function resolveUserDisplayName(schedule) {
+        const fromSchedule = schedule?.user?.name;
+        if (fromSchedule) return fromSchedule;
+        if (cachedUserName) return cachedUserName;
+        return 'Usuario';
+    }
+
+    function showNextCheckinPrompt() {
+        if (!checkinPromptModal || pendingCheckinQueue.length === 0) return;
+        currentCheckinSchedule = pendingCheckinQueue[0];
+        if (checkinUserNameSpan) {
+            checkinUserNameSpan.textContent = resolveUserDisplayName(currentCheckinSchedule);
+        }
+        checkinPromptModal.style.display = 'flex';
+    }
+
+    function closeCheckinPromptModal() {
+        if (checkinPromptModal) {
+            checkinPromptModal.style.display = 'none';
+        }
+        currentCheckinSchedule = null;
+        if (!pendingCheckinQueue.length) {
+            requireCheckinResolution = false;
+        }
+        updateOpenButtonState();
+    }
+
+    function setCheckinButtonsDisabled(disabled) {
+        if (checkinConfirmButton) checkinConfirmButton.disabled = disabled;
+        if (checkinCancelButton) checkinCancelButton.disabled = disabled;
+    }
+
+    function buildScheduleUpdatePayload(schedule, overrideStatus) {
+        if (!schedule || schedule.id == null) return null;
+        const payload = {
+            id: Number(schedule.id)
+        };
+        const userId = schedule?.user?.id ?? getUserIdFromToken();
+        if (userId != null) payload.userId = Number(userId);
+        const trackId = schedule?.track?.id ?? schedule?.trackId;
+        if (trackId != null) payload.trackId = Number(trackId);
+        const paymentId = schedule?.payment?.id ?? schedule?.paymentId;
+        if (paymentId != null) payload.paymentId = Number(paymentId);
+        const rawDate = schedule?.scheduledDate;
+        const isoDate = getDateKey(rawDate);
+        if (isoDate) payload.scheduledDate = isoDate;
+        const turno = schedule?.turno;
+        if (turno) payload.turno = String(turno).toUpperCase();
+        if (overrideStatus) payload.checkinStatus = overrideStatus;
+        return payload;
+    }
+
+    function isToday(dateValue) {
+        const key = getDateKey(dateValue);
+        if (!key) return false;
+        function getTodayKey() {
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            return getDateKey(now);
+        }
+
+        const todayKey = getTodayKey();
+        return key === todayKey;
+    }
+
+    async function submitCheckinStatusUpdate(schedule, newStatus, authToken) {
+        if (!schedule || schedule.id == null) {
+            throw new Error('Não foi possível localizar o agendamento para atualizar o status.');
+        }
+
+        const schedulePayload = buildScheduleUpdatePayload(schedule, newStatus);
+        if (!schedulePayload) {
+            throw new Error('Dados incompletos para atualizar o agendamento.');
+        }
+
+        const scheduleDateKey = getDateKey(schedule?.scheduledDate);
+        if (newStatus === 'REALIZADO' && !isToday(schedule?.scheduledDate)) {
+            throw new Error('Check-in só pode ser marcado como REALIZADO no dia do agendamento.');
+        }
+        if (newStatus === 'CANCELADO' && scheduleDateKey) {
+            const todayKey = getTodayKey();
+            if (scheduleDateKey < todayKey) {
+                throw new Error('Não é permitido cancelar agendamentos passados.');
+            }
+        }
+
+        const resp = await fetch(`${API_BASE_URL}/scheduling/`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(schedulePayload)
+        });
+        if (!resp.ok) {
+            const text = await resp.text();
+            throw new Error(`PUT /scheduling/ -> ${resp.status} ${resp.statusText} ${text || ''}`);
+        }
+    }
+
+    async function processCheckinResponse(newStatus) {
+        if (!currentCheckinSchedule || currentCheckinSchedule.id == null) return;
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+            alert('Sessão expirada. Faça login novamente.');
+            window.location.href = 'login.html';
+            return;
+        }
+
+        setCheckinButtonsDisabled(true);
+        try {
+            await submitCheckinStatusUpdate(currentCheckinSchedule, newStatus, authToken);
+            alert('Status atualizado com sucesso!');
+            pendingCheckinQueue.shift();
+            currentCheckinSchedule = null;
+            if (pendingCheckinQueue.length > 0) {
+                showNextCheckinPrompt();
+            } else {
+                closeCheckinPromptModal();
+            }
+            try { location.reload(); } catch (_) {}
+        } catch (err) {
+            console.error(err);
+            alert('Não foi possivel atualizar o status do check-in.');
+        } finally {
+            setCheckinButtonsDisabled(false);
+        }
     }
 
     
@@ -245,6 +500,20 @@
     let selectedYear = null;
     let selectedButton = null;
     const openScheduleButton = document.getElementById('openScheduleButton');
+    let pendingCheckinQueue = [];
+    let currentCheckinSchedule = null;
+    let requireCheckinResolution = false;
+    const checkinPromptModal = document.getElementById('checkinPromptModal');
+    const checkinUserNameSpan = document.getElementById('checkinUserName');
+    const checkinConfirmButton = document.getElementById('checkinConfirmButton');
+    const checkinCancelButton = document.getElementById('checkinCancelButton');
+
+    if (checkinConfirmButton) {
+        checkinConfirmButton.addEventListener('click', () => processCheckinResponse('REALIZADO'));
+    }
+    if (checkinCancelButton) {
+        checkinCancelButton.addEventListener('click', () => processCheckinResponse('CANCELADO'));
+    }
 
     function isPastDate(day, month, year) {
         try {
@@ -261,7 +530,13 @@
         if (openScheduleButton) {
             const hasSelection = (selectedDay !== null && selectedMonth !== null && selectedYear !== null);
             const past = hasSelection ? isPastDate(selectedDay, selectedMonth, selectedYear) : false;
-            openScheduleButton.disabled = !hasSelection || past;
+            const blocked = requireCheckinResolution;
+            openScheduleButton.disabled = !hasSelection || past || blocked;
+            if (blocked) {
+                openScheduleButton.title = 'Finalize o status do check-in pendente antes de agendar novamente.';
+            } else {
+                openScheduleButton.removeAttribute('title');
+            }
         }
     }
 
@@ -349,18 +624,37 @@
     }
 
     function formatDate(value) {
+        if (!value && value !== 0) return '-';
+        const pad = num => String(num).padStart(2, '0');
         try {
+            if (typeof value === 'string') {
+                const cleaned = value.split('T')[0].split(' ')[0];
+                const dashParts = cleaned.split('-');
+                if (dashParts.length === 3) {
+                    if (dashParts[0].length === 4) {
+                        const [yyyy, mm, dd] = dashParts;
+                        return `${pad(dd)}-${pad(mm)}-${yyyy}`.replace(/-/g, '/');
+                    }
+                    if (dashParts[2].length === 4) {
+                        const [dd, mm, yyyy] = dashParts;
+                        return `${pad(dd)}/${pad(mm)}/${yyyy}`;
+                    }
+                }
+                const slashParts = cleaned.split('/');
+                if (slashParts.length === 3) {
+                    const [dd, mm, yyyy] = slashParts;
+                    return `${pad(dd)}/${pad(mm)}/${yyyy}`;
+                }
+            }
             const date = new Date(value);
             if (!isNaN(date)) {
-                const dd = String(date.getDate()).padStart(2, '0');
-                const mm = String(date.getMonth() + 1).padStart(2, '0');
+                const dd = pad(date.getDate());
+                const mm = pad(date.getMonth() + 1);
                 const yyyy = date.getFullYear();
                 return `${dd}/${mm}/${yyyy}`;
             }
-            return value;
-        } catch (_) {
-            return value;
-        }
+        } catch (_) {}
+        return value;
     }
 
     function previous() {
@@ -518,7 +812,7 @@
 
         const dateIso = toIsoDate(selectedDate);
         const uid = getUserIdFromToken();
-        const baseUrl = 'http://localhost:8080/reservation';
+        const baseUrl = API_BASE_URL;
 
         // Mapeia rotulos para valores do backend
         const turnoMap = { 'MANHA': 'MATUTINO', 'TARDE': 'VESPERTINO', 'NOITE': 'NOTURNO' };
@@ -566,7 +860,7 @@
         trackSel.innerHTML = '<option value="" disabled selected>Selecione</option>';
         paySel.innerHTML = '<option value="" disabled selected>Selecione</option>';
 
-        const baseUrl = 'http://localhost:8080/reservation';
+        const baseUrl = API_BASE_URL;
         const trackUrls = [
             `${baseUrl}/track/`
         ];
@@ -657,7 +951,7 @@
         // Se faltou algum dado, tenta buscar pela API
         if ((!nameInput.value || !emailInput.value) && token) {
             const uid = getUserIdFromToken();
-            const baseUrl = 'http://localhost:8080/reservation';
+            const baseUrl = API_BASE_URL;
             const candidates = [
                 uid ? `${baseUrl}/user/id/${uid}` : null,
                 `${baseUrl}/user/me`
@@ -695,7 +989,7 @@
         if (!trackSel) return;
         trackSel.innerHTML = '<option value="" disabled selected>Selecione</option>';
 
-        const baseUrl = 'http://localhost:8080/reservation';
+        const baseUrl = API_BASE_URL;
         try {
             const resp = await fetch(`${baseUrl}/track/`, {
                 method: 'GET',
@@ -800,7 +1094,7 @@
         const paymentId = current?.payment?.id ?? current?.paymentId;
         payload.paymentId = (paymentId != null) ? Number(paymentId) : null;
 
-        const baseUrl = 'http://localhost:8080/reservation';
+        const baseUrl = API_BASE_URL;
         try {
             const resp = await fetch(`${baseUrl}/scheduling/`, {
                 method: 'PUT',
@@ -833,7 +1127,7 @@
             window.location.href = 'login.html';
             return;
         }
-        const baseUrl = 'http://localhost:8080/reservation';
+        const baseUrl = API_BASE_URL;
 
         async function tryDelete(url, options) {
             try {
@@ -884,6 +1178,9 @@ window.logout = function() {
     }
     window.location.href = "login.html";
 };
+
+
+
 
 
 

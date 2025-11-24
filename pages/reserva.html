@@ -27,7 +27,9 @@
                             <th>E-mail</th>
                             <th>Pista</th>
                             <th>Turno</th>
+                            <th>Checkin</th>
                             <th>Data</th>
+                            
                             <th></th>
                         </tr>
                     </thead>
@@ -136,6 +138,24 @@
 
                 <button id="saveScheduleButton" type="button" class="c-modal__button" onclick="saveScheduleUpdate()">Salvar</button>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal para forcar o usuario a realizar o check-in do dia atual -->
+    <div id="checkinPromptModal" class="modal c-modal">
+        <div class="modal-content c-modal__content">
+            <h2 class="c-modal__title">
+                Salve <span id="checkinUserName">usuario</span>, vai colar na pista hoje?
+            </h2>
+            <p class="c-modal__description">Confirme seu check-in antes de realizar um novo agendamento.</p>
+            <div class="checkin-modal__actions">
+                <button id="checkinConfirmButton" type="button" class="c-modal__button checkin-modal__button--primary">
+                    Sim !
+                </button>
+                <button id="checkinCancelButton" type="button" class="c-modal__button checkin-modal__button--secondary">
+                    Nao vou poder
+                </button>
+            </div>
         </div>
     </div>
     <script>
