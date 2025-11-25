@@ -192,6 +192,31 @@ table {
     cursor: not-allowed;
 }
 
+.turno-chart-wrapper {
+    margin-top: 12px;
+    width: 100%;
+    max-width: 100%;
+    background-color: #2D2F4E;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+}
+
+.turno-chart-wrapper h3 {
+    margin: 0 0 8px;
+    font-size: 15px;
+    color: #ffffff;
+    text-align: center;
+}
+
+.turno-chart-wrapper canvas {
+    width: 100% !important;
+    height: 400px !important;
+    background-color: #2D2F4E;
+    border-radius: 6px;
+}
+
 /* Modal de edição de reserva */
 .time-group {
     display: flex;

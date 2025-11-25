@@ -61,6 +61,10 @@
             <button id="openScheduleButton" type="button" class="open-schedule-btn" disabled>
                 Realizar agendamento
             </button>
+            <div class="turno-chart-wrapper">
+                <h3>Reservas por turno</h3>
+                <canvas id="turnoChart" height="220"></canvas>
+            </div>
         </div>
     </div>
 
@@ -166,6 +170,7 @@
         }
       });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="../Assets/js/reserva.js"></script>
 </body>
 </html>

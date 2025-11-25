@@ -507,6 +507,15 @@
     const checkinUserNameSpan = document.getElementById('checkinUserName');
     const checkinConfirmButton = document.getElementById('checkinConfirmButton');
     const checkinCancelButton = document.getElementById('checkinCancelButton');
+    const turnoChartCanvas = document.getElementById('turnoChart');
+    let turnoChartInstance = null;
+    const turnoChartOrder = ['MATUTINO', 'VESPERTINO', 'NOTURNO'];
+    const turnoChartLabelMap = {
+        'MATUTINO': 'Manhã',
+        'VESPERTINO': 'Tarde',
+        'NOTURNO': 'Noite'
+    };
+    const turnoChartMaxValue = 25;
 
     if (checkinConfirmButton) {
         checkinConfirmButton.addEventListener('click', () => processCheckinResponse('REALIZADO'));
@@ -549,6 +558,112 @@
         }
         selectedButton = null;
         updateOpenButtonState();
+        refreshTurnoChart();
+    }
+
+    function getSelectedDateIso() {
+        if (selectedDay === null || selectedMonth === null || selectedYear === null) return null;
+        const day = String(selectedDay).padStart(2, '0');
+        const month = String(selectedMonth + 1).padStart(2, '0');
+        return `${selectedYear}-${month}-${day}`;
+    }
+
+    function getTurnoColor(value) {
+        const clamped = Math.max(0, Math.min(turnoChartMaxValue, value));
+        const ratio = clamped / turnoChartMaxValue;
+        const r = Math.round(101 + (210 - 101) * ratio); // from greenish to red
+        const g = Math.round(195 - (195 - 48) * ratio);
+        const b = Math.round(186 - (186 - 48) * ratio);
+        return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    function updateTurnoChartDataset(values, isoDate) {
+        if (!turnoChartCanvas) return;
+        const cappedValues = values.map(v => Math.min(turnoChartMaxValue, Math.max(0, v)));
+        const colors = cappedValues.map(v => getTurnoColor(v));
+        const labels = turnoChartOrder.map(key => turnoChartLabelMap[key] || key);
+        const displayDate = isoDate ? formatDate(isoDate) : '';
+        const datasetLabel = displayDate ? `Reservas em ${displayDate}` : 'Reservas';
+        if (!turnoChartInstance) {
+            turnoChartInstance = new Chart(turnoChartCanvas.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: datasetLabel,
+                        data: cappedValues,
+                        backgroundColor: colors
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    backgroundColor: '#2D2F4E',
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: turnoChartMaxValue,
+                            suggestedMax: turnoChartMaxValue,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true
+                        }
+                    }
+                }
+            });
+        } else {
+            turnoChartInstance.data.labels = labels;
+            turnoChartInstance.data.datasets[0].data = cappedValues;
+            turnoChartInstance.data.datasets[0].label = datasetLabel;
+            turnoChartInstance.data.datasets[0].backgroundColor = colors;
+            turnoChartInstance.update();
+        }
+    }
+
+    async function refreshTurnoChart() {
+        if (!turnoChartCanvas) return;
+        const isoDate = getSelectedDateIso();
+        if (!isoDate || !token) {
+            updateTurnoChartDataset(turnoChartOrder.map(() => 0), isoDate);
+            return;
+        }
+        try {
+            const resp = await fetch(`${API_BASE_URL}/scheduling/analytics/day?date=${isoDate}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (!resp.ok) {
+                const text = await resp.text();
+                throw new Error(`GET /scheduling/analytics/day?date=${isoDate} -> ${resp.status} ${resp.statusText} ${text || ''}`);
+            }
+            const data = await resp.json();
+            const totals = turnoChartOrder.reduce((acc, key) => {
+                acc[key] = 0;
+                return acc;
+            }, {});
+            if (Array.isArray(data?.turnos)) {
+                data.turnos.forEach(item => {
+                    const backendKey = String(item?.turno || '').toUpperCase();
+                    if (backendKey in totals) {
+                        totals[backendKey] = Number(item?.total) || 0;
+                    }
+                });
+            }
+            const values = turnoChartOrder.map(key => totals[key] || 0);
+            updateTurnoChartDataset(values, data?.date || isoDate);
+        } catch (error) {
+            console.warn('Não foi possível carregar o gráfico de turnos:', error);
+            updateTurnoChartDataset(turnoChartOrder.map(() => 0), isoDate);
+        }
     }
 
     function selectCalendarDay(button, day, month, year) {
@@ -567,6 +682,7 @@
         selectedMonth = month;
         selectedYear = year;
         updateOpenButtonState();
+        refreshTurnoChart();
     }
 
     async function openModalForDate(day, month, year) {
@@ -615,6 +731,7 @@
 
     updateOpenButtonState();
     showCalendar(currentMonth, currentYear);
+    refreshTurnoChart();
 
     function next() {
         currentYear = (currentMonth === 11) ? currentYear + 1 : currentYear;
