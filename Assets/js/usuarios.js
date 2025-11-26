@@ -1,18 +1,38 @@
-﻿document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+        window.location.href = "login.html";
+        return;
+    }
+
+    function decodeRole() {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const raw = payload.role || payload.authority || (payload.authorities && payload.authorities[0]);
+            return raw ? String(raw).toUpperCase() : null;
+        } catch (_) {
+            return null;
+        }
+    }
+
+    const role = decodeRole();
+    if (!role || !role.includes('ADMIN')) {
+        alert('Acesso permitido apenas para administradores.');
+        window.location.href = 'reserva.html';
+        return;
+    }
+
+    const navReservations = document.getElementById('navReservations');
+    const navDashboard = document.getElementById('navDashboard');
+    if (navReservations) navReservations.addEventListener('click', () => window.location.href = 'reserva.html');
+    if (navDashboard) navDashboard.addEventListener('click', () => window.location.href = 'dashboard.html');
+
     const searchInput = document.getElementById("searchInput");
     const searchButton = document.getElementById("searchButton");
 
     async function fetchUsers(name = "") {
-        const token = localStorage.getItem("authToken");
-
-        if (!token) {
-            alert("Token não encontrado. Faça o login novamente.");
-            window.location.href = "login.html";
-            return;
-        }
-
         try {
-            const url = name 
+            const url = name
                 ? `http://localhost:8080/reservation/user/search?name=${name}`
                 : `http://localhost:8080/reservation/user/`;
             const response = await fetch(url, {
@@ -58,7 +78,6 @@
         fetchUsers(name);
     });
 
-    // "Enter" para executar o pesquisar
     searchInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
             event.preventDefault();
@@ -68,15 +87,14 @@
     });
 
     window.openEditModal = function(id, name, cpf, email, role) {
-        // usa display:flex para centralizar via .c-modal
         document.getElementById("editModal").style.display = "flex";
         document.getElementById("userId").value = id;
         document.getElementById("name").value = name;
         document.getElementById("cpf").value = cpf;
         document.getElementById("email").value = email;
-        
+
         const roleSelect = document.getElementById("role");
-        roleSelect.innerHTML = ""; 
+        roleSelect.innerHTML = "";
 
         const currentOption = document.createElement("option");
         currentOption.value = role;
@@ -94,19 +112,16 @@
         document.getElementById("editModal").style.display = "none";
     };
 
-    // Logoff e retorno para tela de login
     window.logout = function() {
         try {
             localStorage.removeItem("authToken");
-        } catch (e) {
-        }
+        } catch (e) {}
         window.location.href = "login.html";
     };
 
     async function updateUser(event) {
         event.preventDefault();
 
-        const token = localStorage.getItem("authToken");
         const userId = document.getElementById("userId").value;
         const userData = {
             id: userId,
@@ -117,7 +132,6 @@
             role: document.getElementById("role").value
         };
 
-    // Funcao para editar usuarios
         try {
             const response = await fetch(`http://localhost:8080/reservation/user/`, {
                 method: "PUT",
@@ -145,16 +159,7 @@
 
     document.getElementById("editForm").addEventListener("submit", updateUser);
 
-    // função para excluir usuário
     async function deleteUser(id) {
-        const token = localStorage.getItem("authToken");
-
-        if (!token) {
-            alert("Token não encontrado. Faça o login novamente.");
-            window.location.href = "login.html";
-            return;
-        }
-
         try {
             const response = await fetch(`http://localhost:8080/reservation/user/id/${id}`, {
                 method: "DELETE",
@@ -179,7 +184,5 @@
 
     window.deleteUser = deleteUser;
 
-    // Carregar todos os usuário ao iniciar
     fetchUsers();
 });
-

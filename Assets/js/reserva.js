@@ -49,24 +49,25 @@
     const userRole = getUserRoleFromToken();
     const cachedUserName = getUserNameFromToken();
 
-    // Exibe/oculta botão de gerenciar usuários
+    // Exibe/oculta botões de admin
     const manageUsersButton = document.getElementById("manageUsersButton");
-    if (manageUsersButton) {
-        if (userRole === "ADMIN") {
+    const viewDashboardsButton = document.getElementById("ViewDashboards");
+    if (userRole === "ADMIN") {
+        if (manageUsersButton) {
             manageUsersButton.style.display = "block";
-        } else {
-            manageUsersButton.style.display = "none";
+            manageUsersButton.addEventListener('click', () => {
+                window.location.href = 'usuarios.html';
+            });
         }
-    }
-
-    // Exibe/oculta botão de Dashboards 
-        const ViewDashboards = document.getElementById("ViewDashboards");
-    if (ViewDashboards) {
-        if (userRole === "ADMIN") {
-            ViewDashboards.style.display = "block";
-        } else {
-            ViewDashboards.style.display = "none";
+        if (viewDashboardsButton) {
+            viewDashboardsButton.style.display = "block";
+            viewDashboardsButton.addEventListener('click', () => {
+                window.location.href = 'dashboard.html';
+            });
         }
+    } else {
+        if (manageUsersButton) manageUsersButton.style.display = "none";
+        if (viewDashboardsButton) viewDashboardsButton.style.display = "none";
     }
 
     // Carrega reservas na tabela central conforme a role
@@ -413,22 +414,22 @@
 
     async function submitCheckinStatusUpdate(schedule, newStatus, authToken) {
         if (!schedule || schedule.id == null) {
-            throw new Error('Não foi possível localizar o agendamento para atualizar o status.');
+            throw new Error('Não foi possível localizar a reserva para atualizar o status.');
         }
 
         const schedulePayload = buildScheduleUpdatePayload(schedule, newStatus);
         if (!schedulePayload) {
-            throw new Error('Dados incompletos para atualizar o agendamento.');
+            throw new Error('Dados incompletos para atualizar a reserva.');
         }
 
         const scheduleDateKey = getDateKey(schedule?.scheduledDate);
         if (newStatus === 'REALIZADO' && !isToday(schedule?.scheduledDate)) {
-            throw new Error('Check-in só pode ser marcado como REALIZADO no dia do agendamento.');
+            throw new Error('Check-in só pode ser marcado como REALIZADO no dia da reserva.');
         }
         if (newStatus === 'CANCELADO' && scheduleDateKey) {
             const todayKey = getTodayKey();
             if (scheduleDateKey < todayKey) {
-                throw new Error('Não é permitido cancelar agendamentos passados.');
+                throw new Error('Não é permitido cancelar reservas passadas.');
             }
         }
 
@@ -598,15 +599,21 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    backgroundColor: '#2D2F4E',
+                    backgroundColor: '#3A3D6B',
                     scales: {
+                        x: {
+                            ticks: { color: '#ffffff' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
                         y: {
                             beginAtZero: true,
                             max: turnoChartMaxValue,
                             suggestedMax: turnoChartMaxValue,
                             ticks: {
-                                precision: 0
-                            }
+                                precision: 0,
+                                color: '#ffffff'
+                            },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
                         }
                     },
                     plugins: {
@@ -709,7 +716,7 @@
         modal.style.display = "flex";
     }
 
-    // Clique no botão "Realizar agendamento"
+    // Clique no botão "Realizar reserva"
     if (openScheduleButton) {
         openScheduleButton.addEventListener('click', async () => {
             if (selectedDay === null || selectedMonth === null || selectedYear === null) {
@@ -898,7 +905,7 @@
         }
     });
 
-    // Confirma agendamento: envia para o backend e recarrega a lista
+    // Confirma reserva: envia para o backend e recarrega a lista
     window.confirmReservation = async function() {
         const token = localStorage.getItem('authToken');
         if (!token) {

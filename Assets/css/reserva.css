@@ -182,7 +182,7 @@ table {
     background-color: #C3C5C5;
 }
 
-/* Botão de abertura da modal de agendamento */
+/* Botão de abertura da modal de reserva */
 .open-schedule-btn {
     width: 100%;
     margin-top: 5px; /* ~-20% */
@@ -196,7 +196,7 @@ table {
     margin-top: 12px;
     width: 100%;
     max-width: 100%;
-    background-color: #2D2F4E;
+    background-color: #3A3D6B;
     border-radius: 8px;
     padding: 12px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -213,7 +213,7 @@ table {
 .turno-chart-wrapper canvas {
     width: 100% !important;
     height: 400px !important;
-    background-color: #2D2F4E;
+    background-color: #3A3D6B;
     border-radius: 6px;
 }
 

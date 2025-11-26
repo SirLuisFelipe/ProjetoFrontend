@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Reservas</title>
+    <link rel="stylesheet" href="../Assets/css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <button class="sidebar-btn" onclick="window.location.href='reserva.html'">Reservas</button>
+            <button id="manageUsersButton" class="sidebar-btn">Usuários</button>
+            <button class="sidebar-btn active">Dashboards</button>
+            <button class="sidebar-btn" onclick="logout()">Sair</button>
+        </aside>
+        <main class="dashboard-main">
+            <header class="dashboard-header">
+                <h1>Visão Geral das Reservas</h1>
+                <div class="date-filter">
+                    <label>
+                        Início:
+                        <input type="date" id="trackStartDate">
+                    </label>
+                    <label>
+                        Fim:
+                        <input type="date" id="trackEndDate">
+                    </label>
+                    <button type="button" id="applyTrackFilter">Aplicar</button>
+                </div>
+            </header>
+            <section class="dashboard-grid">
+                <div class="dashboard-card span-9 track-card">
+                    <h3>Reservas por pista</h3>
+                    <canvas id="trackChart" height="200"></canvas>
+                </div>
+                <div class="dashboard-card span-3 cancellations-card">
+                    <h3>Taxa de cancelamento de reservas</h3>
+                    <div class="kpi-row">
+                        <div>
+                            <span class="kpi-value" id="cancellationPercentage">0%</span>
+                            <span class="kpi-label">Percentual</span>
+                        </div>
+                        <div>
+                            <span class="kpi-value" id="cancellationTotals">0 / 0</span>
+                            <span class="kpi-label">Cancelados / Total</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="dashboard-card span-4">
+                    <h3>Reservas por forma de pagamento</h3>
+                    <canvas id="paymentChart" height="200"></canvas>
+                </div>
+                <div class="dashboard-card span-4">
+                    <h3>Reservas por turno</h3>
+                    <canvas id="dashboardTurnoChart" height="200"></canvas>
+                </div>
+                <div class="dashboard-card span-4">
+                    <h3>Top usuários por reservas</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Usuário</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topUsersBody">
+                            <tr><td colspan="2">Carregando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="dashboard-card span-12">
+                    <h3>Reservas por período</h3>
+                    <canvas id="timelineChart" height="180"></canvas>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../Assets/js/dashboard.js"></script>
+</body>
+</html>
