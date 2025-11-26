@@ -8,12 +8,12 @@
 }
 
 .sidebar {
-    width: 200px; /* padroniza com a tela de usuários */
-    background-color: #1a1b33; /* harmoniza com a tela de usuários */
+    width: 200px;
+    background-color: #1a1b33;
     display: flex;
     flex-direction: column;
     padding: 20px;
-    padding-top: 80px; /* espaço para o topo */
+    padding-top: 80px;
 }
 
 .sidebar button,
@@ -62,7 +62,7 @@
 .main-content {
     flex: 1;
     padding: 20px;
-    margin-left: 200px;
+    margin-left: 80px;
     display: flex;
     flex-direction: column;
     align-items: center;

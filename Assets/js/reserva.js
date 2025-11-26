@@ -618,7 +618,10 @@
                     },
                     plugins: {
                         legend: {
-                            display: true
+                            display: true,
+                            labels: {
+                                color: '#ffffff'
+                            }
                         }
                     }
                 }
