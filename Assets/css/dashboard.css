@@ -13,13 +13,12 @@ body {
 }
 
 .sidebar {
-    width: 200px;
-    background-color: #1a1b33;
+    width: 200px; /* padroniza com a tela de usuários */
+    background-color: #1a1b33; /* harmoniza com a tela de usuários */
     display: flex;
     flex-direction: column;
     padding: 20px;
-    padding-top: 80px;
-    box-sizing: border-box;
+    padding-top: 80px; /* espaço para o topo */
 }
 
 .sidebar-btn {
@@ -32,6 +31,10 @@ body {
     text-align: center;
     border-radius: 8px;
     font-size: 16px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .sidebar-btn:hover,

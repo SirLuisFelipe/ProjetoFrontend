@@ -8,16 +8,16 @@
 }
 
 .sidebar {
-    width: 200px;
-    background-color: #1a1b33;
-    padding: 20px;
+    width: 200px; /* padroniza com a tela de usuários */
+    background-color: #1a1b33; /* harmoniza com a tela de usuários */
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    position: fixed;
+    padding: 20px;
+    padding-top: 80px; /* espaço para o topo */
 }
 
-.sidebar button {
+.sidebar button,
+.sidebar-btn {
     background-color: #3a3d6b;
     color: white;
     border: none;
@@ -27,6 +27,17 @@
     text-align: center;
     border-radius: 8px; 
     font-size: 16px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar button.active,
+.sidebar button:hover,
+.sidebar-btn.active,
+.sidebar-btn:hover {
+    background-color: #4a4d7a;
 }
 
 #searchButton {
