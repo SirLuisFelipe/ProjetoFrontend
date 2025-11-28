@@ -4,14 +4,14 @@ const {
 } = require('../Assets/js/reserva-helpers');
 
 describe('Helpers da tabela de reservas', () => {
-    test('sortSchedulesByDate ordena por data crescente e mantém items sem data no fim', () => {
+    test('sortSchedulesByDate ordena por data decrescente e mantém items sem data no fim', () => {
         const items = [
             { id: 1, scheduledDate: '2024-11-27' },
             { id: 2, scheduledDate: null },
             { id: 3, scheduledDate: '2024-11-25' }
         ];
         const sorted = sortSchedulesByDate(items);
-        expect(sorted.map(item => item.id)).toEqual([3, 1, 2]);
+        expect(sorted.map(item => item.id)).toEqual([1, 3, 2]);
         expect(items.map(item => item.id)).toEqual([1, 2, 3]); // não mutou o array original
     });
 
