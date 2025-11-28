@@ -21,7 +21,10 @@ const {
         turno: displayTurno(item?.turno),
         checkin: formatCheckinStatus(getCheckinStatus(item)),
         date: formatDate(item?.scheduledDate)
-    })
+    }),
+    resolveUserDisplayName = () => 'Usuario',
+    buildScheduleUpdatePayload = () => null,
+    isToday = () => false
 } = ReservaHelperBundle || {};
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -302,18 +305,11 @@ document.addEventListener("DOMContentLoaded", () => {
         updateOpenButtonState();
     }
 
-    function resolveUserDisplayName(schedule) {
-        const fromSchedule = schedule?.user?.name;
-        if (fromSchedule) return fromSchedule;
-        if (cachedUserName) return cachedUserName;
-        return 'Usuario';
-    }
-
     function showNextCheckinPrompt() {
         if (!checkinPromptModal || pendingCheckinQueue.length === 0) return;
         currentCheckinSchedule = pendingCheckinQueue[0];
         if (checkinUserNameSpan) {
-            checkinUserNameSpan.textContent = resolveUserDisplayName(currentCheckinSchedule);
+            checkinUserNameSpan.textContent = resolveUserDisplayName(currentCheckinSchedule, cachedUserName);
         }
         checkinPromptModal.style.display = 'flex';
     }
@@ -334,45 +330,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (checkinCancelButton) checkinCancelButton.disabled = disabled;
     }
 
-    function buildScheduleUpdatePayload(schedule, overrideStatus) {
-        if (!schedule || schedule.id == null) return null;
-        const payload = {
-            id: Number(schedule.id)
-        };
-        const userId = schedule?.user?.id ?? getUserIdFromToken();
-        if (userId != null) payload.userId = Number(userId);
-        const trackId = schedule?.track?.id ?? schedule?.trackId;
-        if (trackId != null) payload.trackId = Number(trackId);
-        const paymentId = schedule?.payment?.id ?? schedule?.paymentId;
-        if (paymentId != null) payload.paymentId = Number(paymentId);
-        const rawDate = schedule?.scheduledDate;
-        const isoDate = getDateKey(rawDate);
-        if (isoDate) payload.scheduledDate = isoDate;
-        const turno = schedule?.turno;
-        if (turno) payload.turno = String(turno).toUpperCase();
-        if (overrideStatus) payload.checkinStatus = overrideStatus;
-        return payload;
-    }
-
-    function isToday(dateValue) {
-        const key = getDateKey(dateValue);
-        if (!key) return false;
-        function getTodayKey() {
-            const now = new Date();
-            now.setHours(0, 0, 0, 0);
-            return getDateKey(now);
-        }
-
-        const todayKey = getTodayKey();
-        return key === todayKey;
-    }
-
     async function submitCheckinStatusUpdate(schedule, newStatus, authToken) {
         if (!schedule || schedule.id == null) {
             throw new Error('Não foi possível localizar a reserva para atualizar o status.');
         }
 
-        const schedulePayload = buildScheduleUpdatePayload(schedule, newStatus);
+        const schedulePayload = buildScheduleUpdatePayload(schedule, newStatus, { getUserIdFromToken, getDateKey });
         if (!schedulePayload) {
             throw new Error('Dados incompletos para atualizar a reserva.');
         }

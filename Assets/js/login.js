@@ -177,3 +177,16 @@ if (registerForm) {
     });
 }
 
+const LoginModuleExports = {
+    togglePasswordVisibility,
+    openRegisterModal,
+    closeRegisterModal,
+    isRegisterModalOpen
+};
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = LoginModuleExports;
+} else {
+    window.LoginModule = LoginModuleExports;
+}
+

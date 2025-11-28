@@ -8,7 +8,10 @@ const {
     resolveCalendarButtonState,
     displayTurno,
     formatDate,
-    getCheckinStatus
+    getCheckinStatus,
+    resolveUserDisplayName,
+    buildScheduleUpdatePayload,
+    isToday
 } = require('../Assets/js/reserva-helpers');
 
 describe('Reserva helpers', () => {
@@ -122,5 +125,44 @@ describe('Reserva helpers', () => {
         expect(getCheckinStatus({ checkinStatus: 'REALIZADO' })).toBe('REALIZADO');
         expect(getCheckinStatus({})).toBeUndefined();
         expect(getCheckinStatus(null)).toBeUndefined();
+    });
+
+    test('resolveUserDisplayName prioriza o nome da reserva e em seguida cacheado', () => {
+        expect(resolveUserDisplayName({ user: { name: 'Ana' } })).toBe('Ana');
+        expect(resolveUserDisplayName({ user: {} }, 'Carlos')).toBe('Carlos');
+        expect(resolveUserDisplayName({}, null)).toBe('Usuario');
+    });
+
+    test('buildScheduleUpdatePayload compõe o payload com fallback de tokens', () => {
+        const payload = buildScheduleUpdatePayload({
+            id: 10,
+            user: { id: 5 },
+            track: { id: 2 },
+            payment: { id: 4 },
+            scheduledDate: '2024-11-26',
+            turno: 'manha'
+        }, 'REALIZADO', {
+            getDateKey: jest.fn().mockReturnValue('2024-11-26'),
+            getUserIdFromToken: jest.fn().mockReturnValue(9)
+        });
+        expect(payload).toEqual({
+            id: 10,
+            userId: 5,
+            trackId: 2,
+            paymentId: 4,
+            scheduledDate: '2024-11-26',
+            turno: 'MANHA',
+            checkinStatus: 'REALIZADO'
+        });
+        expect(buildScheduleUpdatePayload(null)).toBeNull();
+    });
+
+    test('isToday compara a data informada com a data atual normalizada', () => {
+        const deps = {
+            getDateKey: jest.fn(value => typeof value === 'string' ? value : '2024-11-26'),
+            now: () => new Date('2024-11-26T10:00:00')
+        };
+        expect(isToday('2024-11-26', deps)).toBe(true);
+        expect(isToday('2024-11-25', deps)).toBe(false);
     });
 });

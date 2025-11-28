@@ -20,7 +20,9 @@ const {
         }
     }),
     buildRoleOptions = () => [],
-    formatRoleLabel = (role) => role || ''
+    formatRoleLabel = (role) => role || '',
+    populateRoleSelect = () => {},
+    renderUserList = () => []
 } = UsuariosHelperBundle || {};
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -65,24 +67,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const users = await response.json();
             const userContainer = document.querySelector(".user-list");
             if (!userContainer) return;
-            userContainer.innerHTML = "";
 
-            users.forEach(user => {
-                const normalized = normalizeUser(user);
-                const userDiv = document.createElement("div");
-                userDiv.classList.add("user");
-
-                const infoSpan = document.createElement("span");
-                infoSpan.textContent = normalized.name;
-                userDiv.appendChild(infoSpan);
-
-                const actionsDiv = document.createElement("div");
-                actionsDiv.classList.add("user-actions");
-
-                const editBtn = document.createElement("button");
-                editBtn.classList.add("edit-btn");
-                editBtn.title = "Editar";
-                editBtn.addEventListener('click', () => {
+            renderUserList(userContainer, users, {
+                onEdit: (normalized) => {
                     openEditModal(
                         normalized.id,
                         normalized.raw.name,
@@ -90,28 +77,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         normalized.raw.email,
                         normalized.raw.role
                     );
-                });
-                const editImg = document.createElement("img");
-                editImg.src = "../Assets/img/Icones genericos/Editar22.png";
-                editImg.alt = "Editar";
-                editImg.classList.add("icon");
-                editBtn.appendChild(editImg);
-
-                const deleteBtn = document.createElement("button");
-                deleteBtn.classList.add("lock-btn");
-                deleteBtn.title = "Excluir";
-                deleteBtn.addEventListener('click', () => deleteUser(normalized.id));
-                const deleteImg = document.createElement("img");
-                deleteImg.src = "../Assets/img/Icones genericos/Excluir22.png";
-                deleteImg.alt = "Excluir";
-                deleteImg.classList.add("icon");
-                deleteBtn.appendChild(deleteImg);
-
-                actionsDiv.appendChild(editBtn);
-                actionsDiv.appendChild(deleteBtn);
-                userDiv.appendChild(actionsDiv);
-
-                userContainer.appendChild(userDiv);
+                },
+                onDelete: (normalized) => deleteUser(normalized.id)
             });
         } catch (error) {
             console.error("Erro ao buscar usuários:", error);
@@ -147,17 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (emailInput) emailInput.value = email || '';
 
         const roleSelect = document.getElementById("editRoleSelect");
-        if (roleSelect) {
-            roleSelect.innerHTML = "";
-            const options = buildRoleOptions(role);
-            options.forEach(opt => {
-                const option = document.createElement("option");
-                option.value = opt.value;
-                option.textContent = opt.label;
-                if (opt.selected) option.selected = true;
-                roleSelect.appendChild(option);
-            });
-        }
+        populateRoleSelect(roleSelect, role);
     };
 
     window.closeEditModal = function() {

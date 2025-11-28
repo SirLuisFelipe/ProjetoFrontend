@@ -1,3 +1,23 @@
+const DashboardHelperBundle = window.DashboardHelpers || {
+    decodeTokenRole: () => null,
+    decodeUserId: () => null,
+    formatIsoToHuman: iso => iso || '',
+    summarizeTurnoRange: () => ({
+        totals: { MATUTINO: 0, VESPERTINO: 0, NOTURNO: 0 },
+        label: 'Reservas'
+    }),
+    getTodayIso: () => {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    }
+};
+const {
+    decodeTokenRole,
+    formatIsoToHuman,
+    summarizeTurnoRange,
+    getTodayIso
+} = DashboardHelperBundle;
+
 document.addEventListener('DOMContentLoaded', () => {
     const API_BASE_URL = 'http://localhost:8080/reservation';
     const token = localStorage.getItem('authToken');
@@ -7,27 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    function decodeTokenRole() {
-        try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            const raw = payload.role || payload.authority || (payload.authorities && payload.authorities[0]);
-            if (!raw) return null;
-            return String(raw).toUpperCase();
-        } catch (error) {
-            return null;
-        }
-    }
-
-    function decodeUserId() {
-        try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            return payload.id || payload.userId || payload.sub || null;
-        } catch (_) {
-            return null;
-        }
-    }
-
-    const role = decodeTokenRole();
+    const role = decodeTokenRole(token);
     if (!role || !role.includes('ADMIN')) {
         alert('Acesso permitido apenas para administradores.');
         window.location.href = 'reserva.html';
@@ -71,11 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
             throw new Error(`${path} -> ${resp.status} ${resp.statusText} ${text || ''}`);
         }
         return resp.json();
-    }
-
-    function getTodayIso() {
-        const now = new Date();
-        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     }
 
     function updateTrackChart(data) {
@@ -147,55 +142,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function formatIsoToHuman(iso) {
-        if (!iso) return '';
-        const parts = iso.split('-');
-        if (parts.length !== 3) return iso;
-        return `${parts[2]}/${parts[1]}/${parts[0]}`;
-    }
-
-    function summarizeTurnoRange(payload, fallbackIso) {
-        const order = ['MATUTINO', 'VESPERTINO', 'NOTURNO'];
-        const totals = order.reduce((acc, key) => {
-            acc[key] = 0;
-            return acc;
-        }, {});
-        let start = null;
-        let end = null;
-
-        if (Array.isArray(payload)) {
-            payload.forEach(item => {
-                if (!start) start = item?.date || null;
-                end = item?.date || end;
-                if (Array.isArray(item?.turnos)) {
-                    item.turnos.forEach(t => {
-                        const key = String(t?.turno || '').toUpperCase();
-                        if (key in totals) {
-                            totals[key] += Number(t?.total) || 0;
-                        }
-                    });
-                }
-            });
-        } else if (payload && Array.isArray(payload?.turnos)) {
-            start = payload?.date || fallbackIso;
-            end = start;
-            payload.turnos.forEach(t => {
-                const key = String(t?.turno || '').toUpperCase();
-                if (key in totals) {
-                    totals[key] = Number(t?.total) || 0;
-                }
-            });
-        }
-
-        if (!start) start = fallbackIso;
-        if (!end) end = start;
-        const label = start === end
-            ? `Reservas em ${formatIsoToHuman(start)}`
-            : `Reservas entre ${formatIsoToHuman(start)} e ${formatIsoToHuman(end)}`;
-
-        return { totals, label };
-    }
-
     function updateDailyTurnoChart(data, isoDate) {
         if (!dailyChartCtx) return;
         const order = ['MATUTINO', 'VESPERTINO', 'NOTURNO'];
@@ -204,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'VESPERTINO': 'Tarde',
             'NOTURNO': 'Noite'
         };
-        const summary = summarizeTurnoRange(data, isoDate);
+        const summary = summarizeTurnoRange(data, isoDate, { formatIsoToHuman });
         const labels = order.map(key => labelMap[key]);
         const values = order.map(key => summary.totals[key] || 0);
         const titleDate = summary.label;

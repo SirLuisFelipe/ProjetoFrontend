@@ -222,6 +222,46 @@
         };
     }
 
+    function resolveUserDisplayName(schedule, cachedUserName = null) {
+        const fromSchedule = schedule?.user?.name;
+        if (fromSchedule) return fromSchedule;
+        if (cachedUserName) return cachedUserName;
+        return 'Usuario';
+    }
+
+    function buildScheduleUpdatePayload(schedule, overrideStatus, deps = {}) {
+        const getDateKeyFn = deps.getDateKey || getDateKey;
+        const getUserIdFromTokenFn = deps.getUserIdFromToken || (() => null);
+        if (!schedule || schedule.id == null) return null;
+        const payload = {
+            id: Number(schedule.id)
+        };
+        const userId = schedule?.user?.id ?? getUserIdFromTokenFn();
+        if (userId != null) payload.userId = Number(userId);
+        const trackId = schedule?.track?.id ?? schedule?.trackId;
+        if (trackId != null) payload.trackId = Number(trackId);
+        const paymentId = schedule?.payment?.id ?? schedule?.paymentId;
+        if (paymentId != null) payload.paymentId = Number(paymentId);
+        const rawDate = schedule?.scheduledDate;
+        const isoDate = getDateKeyFn(rawDate);
+        if (isoDate) payload.scheduledDate = isoDate;
+        const turno = schedule?.turno;
+        if (turno) payload.turno = String(turno).toUpperCase();
+        if (overrideStatus) payload.checkinStatus = overrideStatus;
+        return payload;
+    }
+
+    function isToday(dateValue, deps = {}) {
+        const getDateKeyFn = deps.getDateKey || getDateKey;
+        const nowProvider = deps.now || (() => new Date());
+        const key = getDateKeyFn(dateValue);
+        if (!key) return false;
+        const today = nowProvider();
+        today.setHours(0, 0, 0, 0);
+        const todayKey = getDateKeyFn(today);
+        return key === todayKey;
+    }
+
     const helpers = {
         isAdminRole,
         extractItems,
@@ -234,7 +274,10 @@
         computeOpenButtonState,
         resolveCalendarButtonState,
         sortSchedulesByDate,
-        normalizeScheduleRow
+        normalizeScheduleRow,
+        resolveUserDisplayName,
+        buildScheduleUpdatePayload,
+        isToday
     };
 
     if (typeof module !== 'undefined' && module.exports) {

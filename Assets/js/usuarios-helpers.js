@@ -61,11 +61,76 @@
         ];
     }
 
+    function populateRoleSelect(selectEl, currentRole) {
+        if (!selectEl) return;
+        const options = buildRoleOptions(currentRole);
+        selectEl.innerHTML = '';
+        options.forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt.value;
+            option.textContent = opt.label;
+            if (opt.selected) option.selected = true;
+            selectEl.appendChild(option);
+        });
+    }
+
+    function renderUserList(container, users, handlers = {}) {
+        if (!container) return [];
+        const normalizedList = Array.isArray(users) ? users.map(normalizeUser) : [];
+        container.innerHTML = '';
+        normalizedList.forEach(user => {
+            const row = document.createElement('div');
+            row.classList.add('user');
+
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = user.name;
+            row.appendChild(nameSpan);
+
+            const actions = document.createElement('div');
+            actions.classList.add('user-actions');
+
+            const editBtn = document.createElement('button');
+            editBtn.classList.add('edit-btn');
+            editBtn.type = 'button';
+            editBtn.title = 'Editar';
+            if (typeof handlers.onEdit === 'function') {
+                editBtn.addEventListener('click', () => handlers.onEdit(user));
+            }
+            const editImg = document.createElement('img');
+            editImg.src = '../Assets/img/Icones genericos/Editar22.png';
+            editImg.alt = 'Editar';
+            editImg.classList.add('icon');
+            editBtn.appendChild(editImg);
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.classList.add('lock-btn');
+            deleteBtn.type = 'button';
+            deleteBtn.title = 'Excluir';
+            if (typeof handlers.onDelete === 'function') {
+                deleteBtn.addEventListener('click', () => handlers.onDelete(user));
+            }
+            const deleteImg = document.createElement('img');
+            deleteImg.src = '../Assets/img/Icones genericos/Excluir22.png';
+            deleteImg.alt = 'Excluir';
+            deleteImg.classList.add('icon');
+            deleteBtn.appendChild(deleteImg);
+
+            actions.appendChild(editBtn);
+            actions.appendChild(deleteBtn);
+            row.appendChild(actions);
+
+            container.appendChild(row);
+        });
+        return normalizedList;
+    }
+
     const helpers = {
         decodeRoleFromToken,
         normalizeUser,
         buildRoleOptions,
-        formatRoleLabel
+        formatRoleLabel,
+        populateRoleSelect,
+        renderUserList
     };
 
     if (typeof module !== 'undefined' && module.exports) {
