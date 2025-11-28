@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
             cpf: document.getElementById("cpf").value,
             email: document.getElementById("email").value,
             password: document.getElementById("password").value,
-            role: document.getElementById("role").value
+            role: document.getElementById("editRoleSelect")?.value || 'USER'
         };
 
         try {

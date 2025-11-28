@@ -1,4 +1,5 @@
-const ReservaHelperBundle = globalThis.ReservaHelpers || null;
+const rootScope = typeof window !== 'undefined' ? window : globalThis;
+const ReservaHelperBundle = rootScope.ReservaHelpers || null;
 if (!ReservaHelperBundle) {
     console.error('ReservaHelpers nao encontrado. Verifique se Assets/js/reserva-helpers.js foi carregado antes de reserva.js.');
 }
@@ -72,20 +73,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const userRole = getUserRoleFromToken();
     const cachedUserName = getUserNameFromToken();
 
-    // Exibe/oculta botıes de admin
+    // Exibe/oculta bot√µes de admin
     const manageUsersButton = document.getElementById("manageUsersButton");
     const viewDashboardsButton = document.getElementById("ViewDashboards");
     if (userRole === "ADMIN") {
         if (manageUsersButton) {
             manageUsersButton.style.display = "block";
             manageUsersButton.addEventListener('click', () => {
-                globalThis.location.href = 'usuarios.html';
+                rootScope.location.href = 'usuarios.html';
             });
         }
         if (viewDashboardsButton) {
             viewDashboardsButton.style.display = "block";
             viewDashboardsButton.addEventListener('click', () => {
-                globalThis.location.href = 'dashboard.html';
+                rootScope.location.href = 'dashboard.html';
             });
         }
     } else {
@@ -96,10 +97,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Carrega reservas na tabela central conforme a role
     (async function loadSchedules() {
         const tableBody = document.getElementById('schedulesBody');
-        if (!tableBody) return; // tabela pode n„o existir
+        if (!tableBody) return; // tabela pode n√£o existir
 
         if (!token) {
-            globalThis.location.href = 'login.html';
+            rootScope.location.href = 'login.html';
             return;
         }
 
@@ -191,6 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const sortedItems = sortSchedulesByDate(items);
 
+        const todayKey = getDateKey(new Date());
         sortedItems.forEach(item => {
             if (item && item.id != null) {
                 schedulesById.set(item.id, item);
@@ -207,6 +209,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 formatCheckinStatusFn: formatCheckinStatus,
                 getCheckinStatusFn: getCheckinStatus
             });
+            const scheduleKey = getDateKey(item?.scheduledDate);
+            const isPast = Boolean(scheduleKey && todayKey && scheduleKey < todayKey);
+            if (isPast) {
+                tr.classList.add('past-schedule');
+            }
 
             const tdName = document.createElement('td');
             tdName.textContent = rowData.name;
@@ -237,21 +244,27 @@ document.addEventListener("DOMContentLoaded", () => {
             const editBtn = document.createElement('button');
             editBtn.className = 'action-btn edit-btn';
             editBtn.title = 'Editar';
+            if (isPast) editBtn.disabled = true;
             const editImg = document.createElement('img');
             editImg.src = '../Assets/img/Icones genericos/Editar22.png';
             editImg.alt = 'Editar';
             editImg.className = 'icon';
             editBtn.appendChild(editImg);
-            editBtn.addEventListener('click', () => openEditScheduleModal(item?.id));
+            if (!isPast) {
+                editBtn.addEventListener('click', () => openEditScheduleModal(item?.id));
+            }
             const delBtn = document.createElement('button');
             delBtn.className = 'action-btn delete-btn';
             delBtn.title = 'Excluir';
+            if (isPast) delBtn.disabled = true;
             const delImg = document.createElement('img');
             delImg.src = '../Assets/img/Icones genericos/Excluir22.png';
             delImg.alt = 'Excluir';
             delImg.className = 'icon';
             delBtn.appendChild(delImg);
-            delBtn.addEventListener('click', () => deleteSchedule(item?.id));
+            if (!isPast) {
+                delBtn.addEventListener('click', () => deleteSchedule(item?.id));
+            }
             tdActions.appendChild(editBtn);
             tdActions.appendChild(delBtn);
             tr.appendChild(tdActions);
@@ -332,7 +345,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function submitCheckinStatusUpdate(schedule, newStatus, authToken) {
         if (!schedule || schedule.id == null) {
-            throw new Error('N„o foi possÌvel localizar a reserva para atualizar o status.');
+            throw new Error('N√£o foi poss√≠vel localizar a reserva para atualizar o status.');
         }
 
         const schedulePayload = buildScheduleUpdatePayload(schedule, newStatus, { getUserIdFromToken, getDateKey });
@@ -342,12 +355,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const scheduleDateKey = getDateKey(schedule?.scheduledDate);
         if (newStatus === 'REALIZADO' && !isToday(schedule?.scheduledDate)) {
-            throw new Error('Check-in sÛ pode ser marcado como REALIZADO no dia da reserva.');
+            throw new Error('Check-in s√≥ pode ser marcado como REALIZADO no dia da reserva.');
         }
         if (newStatus === 'CANCELADO' && scheduleDateKey) {
             const todayKey = getTodayKey();
             if (scheduleDateKey < todayKey) {
-                throw new Error('N„o È permitido cancelar reservas passadas.');
+                throw new Error('N√£o √© permitido cancelar reservas passadas.');
             }
         }
 
@@ -370,8 +383,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!currentCheckinSchedule || currentCheckinSchedule.id == null) return;
         const authToken = localStorage.getItem('authToken');
         if (!authToken) {
-            alert('Sess„o expirada. FaÁa login novamente.');
-            globalThis.location.href = 'login.html';
+            alert('Sess√£o expirada. Fa√ßa login novamente.');
+            rootScope.location.href = 'login.html';
             return;
         }
 
@@ -386,10 +399,12 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 closeCheckinPromptModal();
             }
-            try { location.reload(); } catch (_) {}
+            if (typeof rootScope.location?.reload === 'function') {
+                rootScope.location.reload();
+            }
         } catch (err) {
             console.error(err);
-            alert('N„o foi possivel atualizar o status do check-in.');
+            alert('N√£o foi possivel atualizar o status do check-in.');
         } finally {
             setCheckinButtonsDisabled(false);
         }
@@ -400,20 +415,20 @@ document.addEventListener("DOMContentLoaded", () => {
             function displayTurno(value) {
         if (value === undefined || value === null) return '-';
         const v = String(value).toUpperCase();
-        if (v.includes('MATUTINO') || v === 'MANHA' || v === 'MANH√') return 'Manh„';
+        if (v.includes('MATUTINO') || v === 'MANHA' || v === 'MANH√É') return 'Manh√£';
         if (v.includes('VESPERTINO') || v === 'TARDE') return 'Tarde';
         if (v.includes('NOTURNO') || v === 'NOITE') return 'Noite';
         return value;
     }
 
-        // CÛdigo do calendario e outras funÁıes
+        // C√≥digo do calendario e outras fun√ß√µes
     let today = new Date();
     let currentMonth = today.getMonth();
     let currentYear = today.getFullYear();
-    let months = ["Janeiro", "Fevereiro", "MarÁo", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+    let months = ["Janeiro", "Fevereiro", "Mar√ßo", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
     let monthAndYear = document.getElementById("monthAndYear");
 
-    // Estado de seleÁ„o do calend·rio
+    // Estado de sele√ß√£o do calend√°rio
     let selectedDay = null;
     let selectedMonth = null;
     let selectedYear = null;
@@ -430,7 +445,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let turnoChartInstance = null;
     const turnoChartOrder = ['MATUTINO', 'VESPERTINO', 'NOTURNO'];
     const turnoChartLabelMap = {
-        'MATUTINO': 'Manh„',
+        'MATUTINO': 'Manh√£',
         'VESPERTINO': 'Tarde',
         'NOTURNO': 'Noite'
     };
@@ -581,7 +596,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const values = turnoChartOrder.map(key => totals[key] || 0);
             updateTurnoChartDataset(values, data?.date || isoDate);
         } catch (error) {
-            console.warn('N„o foi possÌvel carregar o gr·fico de turnos:', error);
+            console.warn('N√£o foi poss√≠vel carregar o gr√°fico de turnos:', error);
             updateTurnoChartDataset(turnoChartOrder.map(() => 0), isoDate);
         }
     }
@@ -629,11 +644,11 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.style.display = "flex";
     }
 
-    // Clique no bot„o "Realizar reserva"
+    // Clique no bot√£o "Realizar reserva"
     if (openScheduleButton) {
         openScheduleButton.addEventListener('click', async () => {
             if (selectedDay === null || selectedMonth === null || selectedYear === null) {
-                alert('Selecione um dia no calend·rio.');
+                alert('Selecione um dia no calend√°rio.');
                 return;
             }
             if (isPastDate(selectedDay, selectedMonth, selectedYear)) {
@@ -644,7 +659,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Seleciona o dia atual por padr„o
+    // Seleciona o dia atual por padr√£o
     selectedDay = today.getDate();
     selectedMonth = currentMonth;
     selectedYear = currentYear;
@@ -668,50 +683,63 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function showCalendar(month, year) {
-        const firstDay = new Date(year, month).getDay();
-        const daysInMonth = 32 - new Date(year, month, 32).getDate();
-        const tbl = document.getElementById("calendarBody");
-        if (!tbl) return;
-        tbl.innerHTML = "";
-        monthAndYear.innerHTML = months[month] + " " + year;
+        const table = document.getElementById("calendarBody");
+        if (!table) return;
+        const context = {
+            firstDay: new Date(year, month).getDay(),
+            daysInMonth: 32 - new Date(year, month, 32).getDate(),
+            table,
+            month,
+            year,
+            currentDate: 1
+        };
+        table.innerHTML = "";
+        monthAndYear.innerHTML = `${months[month]} ${year}`;
 
-        let date = 1;
-        for (let i = 0; i < 6; i++) {
+        for (let week = 0; week < 6; week++) {
             const row = document.createElement("tr");
-            for (let j = 0; j < 7; j++) {
-                if (i === 0 && j < firstDay) {
-                    const cell = document.createElement("td");
-                    row.appendChild(cell);
-                } else if (date > daysInMonth) {
-                    const cell = document.createElement("td");
-                    row.appendChild(cell);
-                } else {
-                    const cell = document.createElement("td");
-                    const btn = document.createElement("button");
-                    btn.textContent = date;
-                    const thisDay = date; // captura o valor do dia atual
-                    btn.addEventListener("click", (event) => selectCalendarDay(event.target, thisDay, month, year));
-                    const btnState = resolveCalendarButtonState({
-                        day: thisDay,
-                        month,
-                        year,
-                        today,
-                        selectedDay,
-                        selectedMonth,
-                        selectedYear
-                    });
-                    btn.className = btnState.classes.join(' ');
-                    if (btnState.isSelected) {
-                        selectedButton = btn;
-                    }
-                    cell.appendChild(btn);
-                    row.appendChild(cell);
-                    date++;
-                }
+            for (let dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++) {
+                appendCalendarCell(row, context, week, dayOfWeek);
             }
-            tbl.appendChild(row);
-            if (date > daysInMonth) break;
+            table.appendChild(row);
+            if (context.currentDate > context.daysInMonth) break;
         }
+    }
+
+    function appendCalendarCell(row, context, weekIndex, dayIndex) {
+        if (weekIndex === 0 && dayIndex < context.firstDay) {
+            row.appendChild(document.createElement("td"));
+            return;
+        }
+        if (context.currentDate > context.daysInMonth) {
+            row.appendChild(document.createElement("td"));
+            return;
+        }
+        const cell = document.createElement("td");
+        cell.appendChild(createCalendarButton(context));
+        row.appendChild(cell);
+        context.currentDate++;
+    }
+
+    function createCalendarButton(context) {
+        const btn = document.createElement("button");
+        const thisDay = context.currentDate;
+        btn.textContent = thisDay;
+        btn.addEventListener("click", (event) => selectCalendarDay(event.target, thisDay, context.month, context.year));
+        const btnState = resolveCalendarButtonState({
+            day: thisDay,
+            month: context.month,
+            year: context.year,
+            today,
+            selectedDay,
+            selectedMonth,
+            selectedYear
+        });
+        btn.className = btnState.classes.join(' ');
+        if (btnState.isSelected) {
+            selectedButton = btn;
+        }
+        return btn;
     }
 
     // (Fluxo antigo removido: abrir diretamente ao clicar no dia)
@@ -720,13 +748,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const turnoSel = document.getElementById('turno');
         if (!turnoSel) return;
 
-        // Reabilita todas as opÁıes inicialmente
+        // Reabilita todas as op√ß√µes inicialmente
         const optManha = turnoSel.querySelector('option[value="MANHA"]');
         const optTarde = turnoSel.querySelector('option[value="TARDE"]');
         const optNoite = turnoSel.querySelector('option[value="NOITE"]');
         [optManha, optTarde, optNoite].forEach(opt => { if (opt) opt.disabled = false; });
 
-        // Se n„o for hoje, todas opÁıes v·lidas
+        // Se n√£o for hoje, todas op√ß√µes v√°lidas
         const now = new Date();
         const isToday = (year === now.getFullYear() && month === now.getMonth() && day === now.getDate());
         if (!isToday) {
@@ -747,24 +775,24 @@ document.addEventListener("DOMContentLoaded", () => {
             if (optManha) optManha.disabled = true;
         }
 
-        // Se a opÁ„o atualmente selecionada ficou desabilitada, limpa seleÁ„o
+        // Se a op√ß√£o atualmente selecionada ficou desabilitada, limpa sele√ß√£o
         if (turnoSel.value && turnoSel.selectedOptions && turnoSel.selectedOptions[0]?.disabled) {
             turnoSel.value = '';
         }
     }
 
-    // expıe globalmente para o onclick do HTML funcionar
-    window.closeModal = function() {
+    // exp√µe globalmente para o onclick do HTML funcionar
+    rootScope.closeModal = function() {
         const modal = document.getElementById("confirmationModal");
         modal.style.display = "none";
     }
 
-    // fecha ao clicar fora do conte˙do do modal
+    // fecha ao clicar fora do conte√∫do do modal
     const confirmationModal = document.getElementById("confirmationModal");
     if (confirmationModal) {
         confirmationModal.addEventListener('click', function(event) {
             if (event.target === confirmationModal) {
-                window.closeModal();
+                rootScope.closeModal();
             }
         });
     }
@@ -774,7 +802,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (event.key === 'Escape') {
             const modal = document.getElementById("confirmationModal");
             if (modal && modal.style.display !== 'none') {
-                window.closeModal();
+                rootScope.closeModal();
             }
         }
     });
@@ -788,11 +816,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Confirma reserva: envia para o backend e recarrega a lista
-    window.confirmReservation = async function() {
+    rootScope.confirmReservation = async function() {
         const token = localStorage.getItem('authToken');
         if (!token) {
-            alert('Sess„o expirada. FaÁa login novamente.');
-            globalThis.location.href = 'login.html';
+            alert('Sess√£o expirada. Fa√ßa login novamente.');
+            rootScope.location.href = 'login.html';
             return;
         }
 
@@ -847,15 +875,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 throw new Error(`POST /scheduling/ ? ${resp.status} ${resp.statusText} ${text || ''}`);
             }
             alert('Reserva realizada com sucesso!');
-            window.closeModal();
-            try { location.reload(); } catch (_) {}
+            rootScope.closeModal();
+            if (typeof rootScope.location?.reload === 'function') {
+                rootScope.location.reload();
+            }
         } catch (err) {
             console.error(err);
-            alert('N„o foi possÌvel realizar a reserva. Verifique os dados ou tente novamente.');
+            alert('N√£o foi poss√≠vel realizar a reserva. Verifique os dados ou tente novamente.');
         }
     }
 
-    // Carrega opÁıes de Pista e Pagamento (Track e Payment)
+    // Carrega op√ß√µes de Pista e Pagamento (Track e Payment)
     async function loadSelectOptions() {
         const token = localStorage.getItem('authToken');
         const trackSel = document.getElementById('track');
@@ -932,56 +962,86 @@ document.addEventListener("DOMContentLoaded", () => {
         turnoSel.addEventListener('change', update);
     }
 
-    // Preenche Nome e Email do usu·rio logado e torna os campos somente para leitura
-    async function prefillAndLockUserFields() {
+    function getProfileInputs() {
         const nameInput = document.getElementById('name');
         const emailInput = document.getElementById('email');
-        if (!nameInput || !emailInput) return;
+        if (!nameInput || !emailInput) return null;
+        return { nameInput, emailInput };
+    }
 
-        // Sempre manter como somente leitura (nao deve ser alterao pois s„o dados do proprio usu·rio)
-        nameInput.readOnly = true;
-        emailInput.readOnly = true;
+    function markProfileInputsReadOnly(inputs) {
+        inputs.nameInput.readOnly = true;
+        inputs.emailInput.readOnly = true;
+    }
 
-        // Tenta pegar do token
-        let tokenPayload = null;
+    function decodeProfileFromToken() {
+        if (!token) return null;
         try {
-            tokenPayload = token ? JSON.parse(atob(token.split('.')[1])) : null;
-        } catch (_) {}
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            return {
+                name: payload?.name || payload?.nome || payload?.userName || payload?.username || '',
+                email: payload?.email || payload?.sub || payload?.userEmail || ''
+            };
+        } catch (_) {
+            return null;
+        }
+    }
 
-        const tokenName = tokenPayload?.name || tokenPayload?.nome || tokenPayload?.userName || tokenPayload?.username;
-        const tokenEmail = tokenPayload?.email || tokenPayload?.sub || tokenPayload?.userEmail;
+    function applyProfileValues(inputs, source) {
+        if (!source) return;
+        if (source.name && !inputs.nameInput.value) {
+            inputs.nameInput.value = source.name;
+        }
+        if (source.email && !inputs.emailInput.value) {
+            inputs.emailInput.value = source.email;
+        }
+    }
 
-        if (tokenName) nameInput.value = tokenName;
-        if (tokenEmail) emailInput.value = tokenEmail;
+    function needsProfileFetch(inputs) {
+        return !inputs.nameInput.value || !inputs.emailInput.value;
+    }
 
-        // Se faltou algum dado, tenta buscar pela API
-        if ((!nameInput.value || !emailInput.value) && token) {
-            const uid = getUserIdFromToken();
-            const baseUrl = API_BASE_URL;
-            const candidates = [
-                uid ? `${baseUrl}/user/id/${uid}` : null,
-                `${baseUrl}/user/me`
-            ].filter(Boolean);
+    async function fetchProfileFromApi() {
+        const baseUrl = API_BASE_URL;
+        const uid = getUserIdFromToken();
+        const candidates = [
+            uid ? `${baseUrl}/user/id/${uid}` : null,
+            `${baseUrl}/user/me`
+        ].filter(Boolean);
 
-            for (const url of candidates) {
-                try {
-                    const resp = await fetch(url, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-                    if (!resp.ok) continue;
-                    const data = await resp.json();
-                    const apiName = data?.name 
-                    const apiEmail = data?.email 
-                    if (!nameInput.value && apiName) nameInput.value = apiName;
-                    if (!emailInput.value && apiEmail) emailInput.value = apiEmail;
-                    break;
-                } catch (_) {}
-            }
+        for (const url of candidates) {
+            try {
+                const resp = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (!resp.ok) continue;
+                const data = await resp.json();
+                return {
+                    name: data?.name || data?.nome || '',
+                    email: data?.email || data?.userEmail || ''
+                };
+            } catch (_) {}
+        }
+        return null;
+    }
+
+    // Preenche Nome e Email do usu√°rio logado e torna os campos somente para leitura
+    async function prefillAndLockUserFields() {
+        const inputs = getProfileInputs();
+        if (!inputs) return;
+        markProfileInputsReadOnly(inputs);
+
+        const tokenProfile = decodeProfileFromToken();
+        applyProfileValues(inputs, tokenProfile);
+
+        if (needsProfileFetch(inputs) && token) {
+            const apiProfile = await fetchProfileFromApi();
+            applyProfileValues(inputs, apiProfile);
         }
     }
 
@@ -1018,7 +1078,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (_) {}
     }
 
-    window.openEditScheduleModal = async function(id) {
+    rootScope.openEditScheduleModal = async function(id) {
         if (!id && id !== 0) return;
         const modal = document.getElementById('editScheduleModal');
         const idInput = document.getElementById('editScheduleId');
@@ -1065,23 +1125,23 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.style.display = 'flex';
     }
 
-    window.closeEditScheduleModal = function() {
+    rootScope.closeEditScheduleModal = function() {
         const modal = document.getElementById('editScheduleModal');
         if (modal) modal.style.display = 'none';
     }
 
-    window.saveScheduleUpdate = async function() {
+    rootScope.saveScheduleUpdate = async function() {
         const token = localStorage.getItem('authToken');
         if (!token) {
-            alert('Sess„o expirada. FaÁa login novamente.');
-            globalThis.location.href = 'login.html';
+            alert('Sess√£o expirada. Fa√ßa login novamente.');
+            rootScope.location.href = 'login.html';
             return;
         }
 
         const id = document.getElementById('editScheduleId')?.value;
         const trackId = document.getElementById('editTrack')?.value;
         const turno = document.getElementById('editTurno')?.value;
-        const dateIso = document.getElementById('editDate')?.value; // j· no formato YYYY-MM-DD
+        const dateIso = document.getElementById('editDate')?.value; // j√° no formato YYYY-MM-DD
         if (!id || !trackId || !turno || !dateIso) {
             alert('Preencha pista, turno e data.');
             return;
@@ -1116,21 +1176,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 throw new Error(`PUT /scheduling/ -> ${resp.status} ${resp.statusText} ${text || ''}`);
             }
             alert('Reserva atualizada com sucesso!');
-            window.closeEditScheduleModal();
-            try { location.reload(); } catch (_) {}
+            rootScope.closeEditScheduleModal();
+            if (typeof rootScope.location?.reload === 'function') {
+                rootScope.location.reload();
+            }
         } catch (err) {
             console.error(err);
-            alert('N„o foi possÌvel atualizar a reserva.');
+            alert('N√£o foi poss√≠vel atualizar a reserva.');
         }
     }
 
-    window.deleteSchedule = async function(id) {
+    rootScope.deleteSchedule = async function(id) {
         if (!id && id !== 0) return;
         if (!confirm('Deseja realmente excluir esta reserva?')) return;
         const token = localStorage.getItem('authToken');
         if (!token) {
-            alert('Sess„o expirada. FaÁa login novamente.');
-            globalThis.location.href = 'login.html';
+            alert('Sess√£o expirada. Fa√ßa login novamente.');
+            rootScope.location.href = 'login.html';
             return;
         }
         const baseUrl = API_BASE_URL;
@@ -1160,30 +1222,39 @@ document.addEventListener("DOMContentLoaded", () => {
         for (const a of attempts) {
             const res = await tryDelete(a.url, { method: a.method, headers: a.headers, body: a.body });
             if (res.ok) {
-                alert('Reserva excluÌda com sucesso!');
-                try { location.reload(); } catch (_) {}
+                alert('Reserva exclu√≠da com sucesso!');
+            if (typeof rootScope.location?.reload === 'function') {
+                rootScope.location.reload();
+            }
                 return;
             }
             lastErr = `${a.method} ${a.url} -> ${res.msg}`;
             console.warn(lastErr);
         }
         console.error('Falha ao excluir reserva:', lastErr);
-        alert('N„o foi possÌvel excluir a reserva.');
+        alert('N√£o foi poss√≠vel excluir a reserva.');
     }
 
     // expor navegacao do calendario para onclick do HTML
-    try { window.next = next; window.previous = previous; } catch (_) {}
+if (rootScope) {
+        rootScope.next = next;
+        rootScope.previous = previous;
+    }
 });
 
-// Logoff e retorno ‡ tela de login (usado no bot„o "Sair")
-window.logout = function() {
+// Logoff e retorno √† tela de login (usado no bot√£o "Sair")
+rootScope.logout = function() {
     try {
         localStorage.removeItem("authToken");
     } catch (e) {
         // ignora erros de storage
     }
-    globalThis.location.href = "login.html";
+    rootScope.location.href = "login.html";
 };
+
+
+
+
 
 
 

@@ -21,9 +21,9 @@
 
     function isModalOpen(modal) {
         if (!modal) return false;
-        const style = global.getComputedStyle ? getComputedStyle(modal) : null;
+        const style = globalThis.getComputedStyle?.(modal) || null;
         if (style) return style.display !== 'none';
-        return Boolean(modal.style && modal.style.display && modal.style.display !== 'none');
+        return Boolean(modal.style?.display && modal.style.display !== 'none');
     }
 
     const helpers = {

@@ -79,6 +79,13 @@ table {
     text-align: center;
     color: white;
 }
+.reservation-table tr.past-schedule td {
+    color: rgba(255, 255, 255, 0.35);
+}
+.reservation-table tr.past-schedule .action-btn {
+    pointer-events: none;
+    opacity: 0.4;
+}
 
 /* Coluna de acoes (nao usada; icones flutuantes) */
 .reservation-table .action-btn {

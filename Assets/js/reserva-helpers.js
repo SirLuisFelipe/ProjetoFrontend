@@ -32,37 +32,42 @@
         return `${year}-${pad(month)}-${pad(day)}`;
     }
 
+    function parseDashDate(cleaned, pad) {
+        const dashParts = cleaned.split('-');
+        if (dashParts.length !== 3) return null;
+        const [first, second, third] = dashParts;
+        if (first.length === 4) {
+            return buildKey(first, second, third, pad);
+        }
+        if (third.length === 4) {
+            return buildKey(third, second, first, pad);
+        }
+        return null;
+    }
+
+    function parseSlashDate(cleaned, pad) {
+        const slashParts = cleaned.split('/');
+        if (slashParts.length !== 3) return null;
+        const [first, second, third] = slashParts;
+        if (first.length === 4) {
+            return buildKey(first, second, third, pad);
+        }
+        if (third.length === 4) {
+            return buildKey(third, second, first, pad);
+        }
+        return null;
+    }
+
     function getDateKey(value) {
         if (!value) return null;
         const pad = num => String(num).padStart(2, '0');
         try {
             if (typeof value === 'string') {
                 const cleaned = value.split('T')[0].split(' ')[0];
-                const dashParts = cleaned.split('-');
-                if (dashParts.length === 3) {
-                    if (dashParts[0].length === 4) {
-                        const [yyyy, mm, dd] = dashParts;
-                        const key = buildKey(yyyy, mm, dd, pad);
-                        if (key) return key;
-                    }
-                    if (dashParts[2].length === 4) {
-                        const [dd, mm, yyyy] = dashParts;
-                        const key = buildKey(yyyy, mm, dd, pad);
-                        if (key) return key;
-                    }
-                }
-                const slashParts = cleaned.split('/');
-                if (slashParts.length === 3) {
-                    if (slashParts[0].length === 4) {
-                        const [yyyy, mm, dd] = slashParts;
-                        const key = buildKey(yyyy, mm, dd, pad);
-                        if (key) return key;
-                    } else if (slashParts[2].length === 4) {
-                        const [dd, mm, yyyy] = slashParts;
-                        const key = buildKey(yyyy, mm, dd, pad);
-                        if (key) return key;
-                    }
-                }
+                const parsedDash = parseDashDate(cleaned, pad);
+                if (parsedDash) return parsedDash;
+                const parsedSlash = parseSlashDate(cleaned, pad);
+                if (parsedSlash) return parsedSlash;
             }
             if (value instanceof Date) {
                 if (isNaN(value)) return null;
@@ -89,7 +94,7 @@
     function displayTurno(value) {
         if (value === undefined || value === null) return '-';
         const normalized = String(value).toUpperCase();
-        if (normalized.includes('MATUTINO') || normalized === 'MANHA' || normalized === 'MANHÃ') return 'Manha';
+        if (normalized.includes('MATUTINO') || normalized === 'MANHA' || normalized === 'MANHÃ') return 'Manha';
         if (normalized.includes('VESPERTINO') || normalized === 'TARDE') return 'Tarde';
         if (normalized.includes('NOTURNO') || normalized === 'NOITE') return 'Noite';
         return value;
@@ -198,7 +203,7 @@
             if (!keyA && !keyB) return 0;
             if (!keyA) return 1;
             if (!keyB) return -1;
-            return keyA.localeCompare(keyB);
+            return keyB.localeCompare(keyA);
         });
     }
 
