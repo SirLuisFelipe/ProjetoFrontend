@@ -9,7 +9,7 @@ body {
 
 .container {
     display: flex;
-    height: 100vh;
+    min-height: calc(100vh - var(--top-bar-height, 64px));
 }
 /* Barra lateral */
 .sidebar {
@@ -216,7 +216,7 @@ table {
 
 .turno-chart-wrapper canvas {
     width: 100% !important;
-    height: 400px !important;
+    height: 300px !important;
     background-color: #3A3D6B;
     border-radius: 6px;
 }

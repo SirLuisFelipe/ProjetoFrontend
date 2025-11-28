@@ -3,8 +3,11 @@
     background-color: #2d2f4e;
     color: #ffffff;
     margin: 0;
+}
+
+.usuarios-layout {
     display: flex;
-    min-height: 100vh;
+    min-height: calc(100vh - var(--top-bar-height, 64px));
 }
 
 .sidebar {

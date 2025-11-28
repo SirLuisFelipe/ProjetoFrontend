@@ -5,9 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Reservas</title>
     <link rel="stylesheet" href="../Assets/css/dashboard.css">
+    <link rel="stylesheet" href="../Assets/css/layout.css">
 </head>
-<body>
-    <div class="dashboard-container">
+<body class="has-top-bar">
+    <header class="app-top-bar">
+        <div class="app-top-bar__left">
+            <span class="app-top-bar__welcome js-welcome-user">Bem-vindo</span>
+        </div>
+    </header>
+    <div class="dashboard-container layout-with-topbar">
         <aside class="sidebar">
             <button class="sidebar-btn" onclick="window.location.href='reserva.html'">Reservas</button>
             <button id="manageUsersButton" class="sidebar-btn">Usuários</button>
@@ -77,6 +83,7 @@
         </main>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../Assets/js/topbar.js"></script>
     <script src="../Assets/js/dashboard.js"></script>
 </body>
 </html>

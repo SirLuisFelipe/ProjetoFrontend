@@ -6,26 +6,34 @@
   <title>Gerenciamento de usuários</title>
   <link rel="stylesheet" href="../Assets/css/usuarios.css">
   <link rel="stylesheet" href="../Assets/css/modal.css">
+  <link rel="stylesheet" href="../Assets/css/layout.css">
 </head>
-<body>
-  <div class="sidebar">
-    <button id="navReservations" class="sidebar-btn">Reservas</button>
-    <button class="sidebar-btn active">Usuários</button>
-    <button id="navDashboard" class="sidebar-btn">Dashboards</button>
-    <button onclick="logout()">Sair</button>
-  </div>
-  <div class="main-content">
-    <h2>Gerenciamento de usuários</h2>
-    <div class="search-row">
-      <input type="text" id="searchInput" placeholder="Pesquisar" class="search-bar">
-      <button id="searchButton" type="button">Buscar</button>
-      <button id="registerButton" type="button" onclick="openRegisterModal()">Novo usuário</button>
+<body class="has-top-bar">
+  <header class="app-top-bar">
+    <div class="app-top-bar__left">
+      <span class="app-top-bar__welcome js-welcome-user">Bem-vindo</span>
     </div>
+  </header>
+  <div class="usuarios-layout layout-with-topbar">
+    <div class="sidebar">
+      <button id="navReservations" class="sidebar-btn">Reservas</button>
+      <button class="sidebar-btn active">Usuários</button>
+      <button id="navDashboard" class="sidebar-btn">Dashboards</button>
+      <button onclick="logout()">Sair</button>
+    </div>
+    <div class="main-content">
+      <h2>Gerenciamento de usuários</h2>
+      <div class="search-row">
+        <input type="text" id="searchInput" placeholder="Pesquisar" class="search-bar">
+        <button id="searchButton" type="button">Buscar</button>
+        <button id="registerButton" type="button" onclick="openRegisterModal()">Novo usuário</button>
+      </div>
 
-    <div class="user-list"> </div>
+      <div class="user-list"> </div>
+    </div>
   </div>
 
-  <!-- Modal de edicao -->
+<!-- Modal de edicao -->
   <div id="editModal" class="modal c-modal">
     <div class="modal-content c-modal__content">
       <span class="close c-modal__close" onclick="closeEditModal()">&times;</span>
@@ -112,6 +120,7 @@
       }
     });
   </script>
+  <script src="../Assets/js/topbar.js"></script>
   <script src="../Assets/js/usuarios.js"></script>
   <script src="../Assets/js/login.js"></script>
 </body>

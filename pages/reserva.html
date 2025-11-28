@@ -6,10 +6,16 @@
     <title>Painel de Reservas</title>
     <link rel="stylesheet" href="../Assets/css/reserva.css">
     <link rel="stylesheet" href="../Assets/css/modal.css">
+    <link rel="stylesheet" href="../Assets/css/layout.css">
 </head>
 
-<body>
-    <div class="container">
+<body class="has-top-bar">
+    <header class="app-top-bar">
+        <div class="app-top-bar__left">
+            <span class="app-top-bar__welcome js-welcome-user">Bem-vindo</span>
+        </div>
+    </header>
+    <div class="container layout-with-topbar">
         <div class="sidebar">
             <button class="sidebar-btn">Reservas</button>
             <button id="manageUsersButton" class="sidebar-btn">Usuários</button>
@@ -171,6 +177,7 @@
       });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../Assets/js/topbar.js"></script>
     <script src="../Assets/js/reserva.js"></script>
 </body>
 </html>
