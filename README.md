@@ -51,3 +51,32 @@ Caso o backend esteja em outro endereço, atualize a constante `API_BASE_URL` no
 - Para depurar requisições, abra o DevTools do navegador (F12) e use a aba **Network**.
 
 Com isso você já consegue rodar o frontend em qualquer ambiente sem precisar de builds adicionais.
+
+## Análise no SonarCloud
+O arquivo `sonar-project.properties` já aponta para o projeto **SirLuisFelipe_ProjetoFrontend** dentro da organização **sirluisfelipe** no SonarCloud. Ele também guarda o token informado pelo usuário para permitir a execução local do scanner.
+
+### Como enviar uma análise
+1. Instale o `sonar-scanner` (ou use um pipeline/Action que o execute automaticamente).
+2. Rode os testes do frontend e gere o relatório LCOV em `coverage/lcov.info`. Exemplo usando Jest:
+   ```bash
+   npm install
+   npm test -- --coverage --coverageReporters=lcov
+   ```
+3. Defina o token em uma variável de ambiente (ex.: `set SONAR_TOKEN=...` no Windows ou `export SONAR_TOKEN=...` no macOS/Linux) e execute:
+   ```bash
+   sonar-scanner -Dsonar.login=%SONAR_TOKEN%        # Windows (PowerShell: $env:SONAR_TOKEN)
+   # ou
+   sonar-scanner -Dsonar.login=$SONAR_TOKEN         # macOS / Linux
+   ```
+   O comando utiliza as configurações do arquivo e envia métricas + cobertura para o SonarCloud.
+
+> Em pipelines, prefira definir o token em uma variável de ambiente (ex.: `SONAR_TOKEN`) e sobrescrever `sonar.login` durante a execução para evitar expor o segredo no repositório.
+
+### GitHub Actions
+Este repositório já possui o workflow `.github/workflows/sonar.yml`, que:
+- Faz checkout do código e prepara o Node 18;
+- Executa `npm ci` e `npm test -- --coverage --coverageReporters=lcov` somente se `package-lock.json` existir;
+- Garante um `coverage/lcov.info` (gera um placeholder quando não há testes);
+- Chama o `sonarcloud-github-action`.
+
+Para que a Action funcione, configure o segredo `SONAR_TOKEN` no repositório do GitHub (Settings → Secrets → Actions). O `GITHUB_TOKEN` padrão já é fornecido pelo GitHub. Depois disso, todo push/PR contra `main` dispara a análise automática no SonarCloud.

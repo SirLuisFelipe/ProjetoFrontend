@@ -1,0 +1,43 @@
+name: SonarCloud Frontend
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  sonar:
+    name: Run SonarCloud analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies (if package-lock exists)
+        if: hashFiles('package-lock.json') != ''
+        run: npm ci
+
+      - name: Run tests with coverage (if package-lock exists)
+        if: hashFiles('package-lock.json') != ''
+        run: npm test -- --coverage --coverageReporters=lcov
+
+      - name: Ensure coverage placeholder
+        run: |
+          mkdir -p coverage
+          if [ ! -f coverage/lcov.info ]; then
+            echo "TN:" > coverage/lcov.info
+          fi
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
