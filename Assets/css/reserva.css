@@ -98,7 +98,9 @@ table {
     max-height: calc(100vh - 200px); 
     overflow: auto; 
     border: 0.5px solid #1A1B33; /* borda fina ao redor da tabela (criando nova linha vazia*/
-    border-radius: 5px; 
+    border-radius: 5px;
+    scrollbar-width: thin;
+    scrollbar-color: #3A3D6B #2D2F4E;
 }
 
 .calendar-container {
@@ -164,14 +166,14 @@ table {
 .calendar-container th {
     background-color: #3A3D6B; 
     color: white;
-    /*border-radius: 5px 5px 0 0; */
 }
 
 .calendar-nav {
     display: flex;
     width: 100%;
     margin-top: 3px; /* -20% */
-    gap: 6px; /* -20% */}
+    gap: 6px; /* -20% */
+}
 
 .calendar-container button {
     background-color: #3A3D6B;
@@ -237,13 +239,6 @@ table {
 .calendar-container thead th:first-child { border-top-left-radius: 4px; }
 .calendar-container thead th:last-child { border-top-right-radius: 4px; }
 
-
-/* Scrollbar personalizado da área de reservas */
-/* Firefox */
-.reservation-table-wrap {
-    scrollbar-width: thin; /* auto | thin | none */
-    scrollbar-color: #3A3D6B #2D2F4E; /* thumb track */
-}
 
 /* (Chrome/Edge/Safari) */
 .reservation-table-wrap::-webkit-scrollbar {

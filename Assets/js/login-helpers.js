@@ -35,6 +35,6 @@
     if (typeof module !== 'undefined' && module.exports) {
         module.exports = helpers;
     } else {
-        global.LoginHelpers = helpers;
+        globalThis.LoginHelpers = helpers;
     }
 })(typeof window !== 'undefined' ? window : globalThis);

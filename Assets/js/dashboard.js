@@ -1,4 +1,4 @@
-const DashboardHelperBundle = window.DashboardHelpers || {
+const DashboardHelperBundle = globalThis.DashboardHelpers || {
     decodeTokenRole: () => null,
     decodeUserId: () => null,
     formatIsoToHuman: iso => iso || '',
@@ -23,14 +23,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('authToken');
 
     if (!token) {
-        window.location.href = 'login.html';
+        globalThis.location.href = 'login.html';
         return;
     }
 
     const role = decodeTokenRole(token);
     if (!role || !role.includes('ADMIN')) {
         alert('Acesso permitido apenas para administradores.');
-        window.location.href = 'reserva.html';
+        globalThis.location.href = 'reserva.html';
         return;
     }
 
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (manageUsersButton) {
         manageUsersButton.style.display = 'block';
         manageUsersButton.addEventListener('click', () => {
-            window.location.href = 'usuarios.html';
+            globalThis.location.href = 'usuarios.html';
         });
     }
 
@@ -154,6 +154,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const labels = order.map(key => labelMap[key]);
         const values = order.map(key => summary.totals[key] || 0);
         const titleDate = summary.label;
+        const maxValue = Math.max(...values, 0);
+        const colors = values.map(value => {
+            if (!maxValue) {
+                return '#65c3ba';
+            }
+            const ratio = Math.min(Math.max(value / maxValue, 0), 1);
+            const r = Math.round(101 + (242 - 101) * ratio);
+            const g = Math.round(195 - (195 - 95) * ratio);
+            const b = Math.round(186 - (186 - 92) * ratio);
+            return `rgb(${r}, ${g}, ${b})`;
+        });
         if (!dashboardTurnoChart) {
             dashboardTurnoChart = new Chart(dailyChartCtx, {
                 type: 'bar',
@@ -162,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     datasets: [{
                         label: titleDate ? `Reservas em ${titleDate}` : 'Reservas',
                         data: values,
-                        backgroundColor: ['#65c3ba', '#f2a541', '#7a5af8']
+                        backgroundColor: colors
                     }]
                 },
                 options: {
@@ -186,6 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dashboardTurnoChart.data.labels = labels;
             dashboardTurnoChart.data.datasets[0].data = values;
             dashboardTurnoChart.data.datasets[0].label = titleDate ? `Reservas em ${titleDate}` : 'Reservas';
+            dashboardTurnoChart.data.datasets[0].backgroundColor = colors;
             dashboardTurnoChart.update();
         }
     }
@@ -332,5 +344,5 @@ function logout() {
     try {
         localStorage.removeItem('authToken');
     } catch (error) {}
-    window.location.href = 'login.html';
+    globalThis.location.href = 'login.html';
 }

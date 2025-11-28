@@ -1,22 +1,27 @@
 (function (global) {
     function safeDecodeToken(token) {
-        if (!token || typeof token !== 'string') return null;
-        const parts = token.split('.');
-        if (parts.length < 2) return null;
-        const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-        try {
-            let json = null;
-            if (typeof atob === 'function') {
-                json = atob(base64);
-            } else if (typeof Buffer !== 'undefined') {
-                json = Buffer.from(base64, 'base64').toString('utf8');
-            } else {
+        if (token && typeof token === 'string') {
+            const parts = token.split('.');
+            if (parts.length < 2) return null;
+            const base64 = parts[1]
+                .replaceAll('-', '+')
+                .replaceAll('_', '/');
+            try {
+                let json = null;
+                if (typeof atob === 'function') {
+                    json = atob(base64);
+                } else if (typeof Buffer !== 'undefined') {
+                    json = Buffer.from(base64, 'base64').toString('utf8');
+                } else {
+                    return null;
+                }
+                return JSON.parse(json);
+            } catch (error) {
+                console.warn('Falha ao decodificar token do dashboard:', error);
                 return null;
             }
-            return JSON.parse(json);
-        } catch (_) {
-            return null;
         }
+        return null;
     }
 
     function decodeTokenRole(token) {
@@ -98,6 +103,6 @@
     if (typeof module !== 'undefined' && module.exports) {
         module.exports = helpers;
     } else {
-        global.DashboardHelpers = helpers;
+        globalThis.DashboardHelpers = helpers;
     }
 })(typeof window !== 'undefined' ? window : globalThis);
