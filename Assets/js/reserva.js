@@ -1,4 +1,30 @@
-﻿document.addEventListener("DOMContentLoaded", () => {
+﻿const ReservaHelperBundle = window.ReservaHelpers || null;
+if (!ReservaHelperBundle) {
+    console.error('ReservaHelpers nao encontrado. Verifique se Assets/js/reserva-helpers.js foi carregado antes de reserva.js.');
+}
+const {
+    isAdminRole = () => false,
+    extractItems = data => Array.isArray(data) ? data : [],
+    formatCheckinStatus = value => (value === undefined || value === null || value === '' ? '-' : value),
+    getDateKey = () => null,
+    getCheckinStatus = () => undefined,
+    displayTurno = () => '-',
+    formatDate = value => value,
+    isPastDate = () => false,
+    computeOpenButtonState = () => ({ disabled: true, title: null }),
+    resolveCalendarButtonState = () => ({ classes: ['calendar-btn'] }),
+    sortSchedulesByDate = items => Array.isArray(items) ? items.slice() : [],
+    normalizeScheduleRow = (item) => ({
+        name: '-',
+        email: '-',
+        track: '-',
+        turno: displayTurno(item?.turno),
+        checkin: formatCheckinStatus(getCheckinStatus(item)),
+        date: formatDate(item?.scheduledDate)
+    })
+} = ReservaHelperBundle || {};
+
+document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("authToken");
 
     const API_BASE_URL = 'http://localhost:8080/reservation';
@@ -40,12 +66,6 @@
         }
     }
 
-    function isAdminRole(role) {
-        if (!role) return false;
-        const r = String(role).toUpperCase();
-        return r.includes('ADMIN');
-    }
-    
     const userRole = getUserRoleFromToken();
     const cachedUserName = getUserNameFromToken();
 
@@ -148,13 +168,6 @@
         tableBody.innerHTML = '<tr><td colspan=\"7\">Erro ao carregar reservas</td></tr>';
     })();
 
-    function extractItems(data) {
-        if (Array.isArray(data)) return data;
-        if (!data || typeof data !== 'object') return [];
-        if (Array.isArray(data.content)) return data.content;
-        return [];
-    }
-
     const schedulesById = new Map();
 
     function renderSchedules(items) {
@@ -173,14 +186,7 @@
             return;
         }
 
-        const sortedItems = items.slice().sort((a, b) => {
-            const keyA = getDateKey(a?.scheduledDate);
-            const keyB = getDateKey(b?.scheduledDate);
-            if (!keyA && !keyB) return 0;
-            if (!keyA) return 1;
-            if (!keyB) return -1;
-            return keyA.localeCompare(keyB);
-        });
+        const sortedItems = sortSchedulesByDate(items);
 
         sortedItems.forEach(item => {
             if (item && item.id != null) {
@@ -192,34 +198,35 @@
                 try { tr.dataset.scheduleId = String(item.id); } catch (e) {}
             }
 
+            const rowData = normalizeScheduleRow(item, {
+                formatDateFn: formatDate,
+                displayTurnoFn: displayTurno,
+                formatCheckinStatusFn: formatCheckinStatus,
+                getCheckinStatusFn: getCheckinStatus
+            });
+
             const tdName = document.createElement('td');
-            const n = item?.user?.name;
-            tdName.textContent = (n === undefined || n === null) ? '-' : n;
+            tdName.textContent = rowData.name;
             tr.appendChild(tdName);
 
             const tdEmail = document.createElement('td');
-            const e = item?.user?.email; 
-            tdEmail.textContent = (e === undefined || e === null) ? '-' : e;
+            tdEmail.textContent = rowData.email;
             tr.appendChild(tdEmail);
 
             const tdTrack = document.createElement('td');
-            const t = item?.track?.name;
-            tdTrack.textContent = (t === undefined || t === null) ? '-' : t;
+            tdTrack.textContent = rowData.track;
             tr.appendChild(tdTrack);
 
             const tdTurno = document.createElement('td');
-            const tu = item?.turno;
-            tdTurno.textContent = displayTurno(tu);
+            tdTurno.textContent = rowData.turno;
             tr.appendChild(tdTurno);
 
             const tdCheckin = document.createElement('td');
-            const ck = getCheckinStatus(item);
-            tdCheckin.textContent = formatCheckinStatus(ck);
+            tdCheckin.textContent = rowData.checkin;
             tr.appendChild(tdCheckin);
 
             const tdDate = document.createElement('td');
-            const d = item?.scheduledDate
-            tdDate.textContent = (d === undefined || d === null) ? '-' : formatDate(d);
+            tdDate.textContent = rowData.date;
             tr.appendChild(tdDate);
             // acoes dentro da tabela
             const tdActions = document.createElement('td');
@@ -250,58 +257,6 @@
         });
 
         handleCheckinQueue(items);
-    }
-
-    function getCheckinStatus(schedule) {
-        if (schedule.checkinStatus !== undefined && schedule.checkinStatus !== null) return schedule.checkinStatus;
-        return undefined;
-    }
-
-    function formatCheckinStatus(value) {
-        if (value === undefined || value === null || value === '') return '-';
-        const normalized = String(value).toUpperCase();
-        if (normalized === 'PENDENTE') return 'Pendente';
-        if (normalized === 'NAO_REALIZADO') return 'Não Realizado';
-        if (normalized === 'REALIZADO') return 'Realizado';
-        if (normalized === 'CANCELADO') return 'Cancelado';
-        return value;
-    }
-
-    function getDateKey(value) {
-        if (!value) return null;
-        const pad = num => String(num).padStart(2, '0');
-        try {
-            if (typeof value === 'string') {
-                const cleaned = value.split('T')[0].split(' ')[0];
-                const dashParts = cleaned.split('-');
-                if (dashParts.length === 3) {
-                    if (dashParts[0].length === 4) {
-                        const [yyyy, mm, dd] = dashParts;
-                        return `${yyyy}-${pad(mm)}-${pad(dd)}`;
-                    }
-                    if (dashParts[2].length === 4) {
-                        const [dd, mm, yyyy] = dashParts;
-                        return `${yyyy}-${pad(mm)}-${pad(dd)}`;
-                    }
-                }
-                const slashParts = cleaned.split('/');
-                if (slashParts.length === 3) {
-                    const [dd, mm, yyyy] = slashParts;
-                    return `${yyyy}-${pad(mm)}-${pad(dd)}`;
-                }
-            }
-            if (value instanceof Date) {
-                if (isNaN(value)) return null;
-                return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}`;
-            }
-            const asDate = new Date(value);
-            if (!isNaN(asDate)) {
-                return `${asDate.getFullYear()}-${pad(asDate.getMonth() + 1)}-${pad(asDate.getDate())}`;
-            }
-        } catch (_) {
-            return null;
-        }
-        return null;
     }
 
     function getTodayKey() {
@@ -525,25 +480,17 @@
         checkinCancelButton.addEventListener('click', () => processCheckinResponse('CANCELADO'));
     }
 
-    function isPastDate(day, month, year) {
-        try {
-            const dSel = new Date(year, month, day, 0, 0, 0, 0);
-            const dNow = new Date();
-            const dToday = new Date(dNow.getFullYear(), dNow.getMonth(), dNow.getDate(), 0, 0, 0, 0);
-            return dSel.getTime() < dToday.getTime();
-        } catch (_) {
-            return false;
-        }
-    }
-
     function updateOpenButtonState() {
         if (openScheduleButton) {
-            const hasSelection = (selectedDay !== null && selectedMonth !== null && selectedYear !== null);
-            const past = hasSelection ? isPastDate(selectedDay, selectedMonth, selectedYear) : false;
-            const blocked = requireCheckinResolution;
-            openScheduleButton.disabled = !hasSelection || past || blocked;
-            if (blocked) {
-                openScheduleButton.title = 'Finalize o status do check-in pendente antes de agendar novamente.';
+            const state = computeOpenButtonState({
+                selectedDay,
+                selectedMonth,
+                selectedYear,
+                requireCheckinResolution
+            });
+            openScheduleButton.disabled = state.disabled;
+            if (state.title) {
+                openScheduleButton.title = state.title;
             } else {
                 openScheduleButton.removeAttribute('title');
             }
@@ -750,40 +697,6 @@
         showCalendar(currentMonth, currentYear);
     }
 
-    function formatDate(value) {
-        if (!value && value !== 0) return '-';
-        const pad = num => String(num).padStart(2, '0');
-        try {
-            if (typeof value === 'string') {
-                const cleaned = value.split('T')[0].split(' ')[0];
-                const dashParts = cleaned.split('-');
-                if (dashParts.length === 3) {
-                    if (dashParts[0].length === 4) {
-                        const [yyyy, mm, dd] = dashParts;
-                        return `${pad(dd)}-${pad(mm)}-${yyyy}`.replace(/-/g, '/');
-                    }
-                    if (dashParts[2].length === 4) {
-                        const [dd, mm, yyyy] = dashParts;
-                        return `${pad(dd)}/${pad(mm)}/${yyyy}`;
-                    }
-                }
-                const slashParts = cleaned.split('/');
-                if (slashParts.length === 3) {
-                    const [dd, mm, yyyy] = slashParts;
-                    return `${pad(dd)}/${pad(mm)}/${yyyy}`;
-                }
-            }
-            const date = new Date(value);
-            if (!isNaN(date)) {
-                const dd = pad(date.getDate());
-                const mm = pad(date.getMonth() + 1);
-                const yyyy = date.getFullYear();
-                return `${dd}/${mm}/${yyyy}`;
-            }
-        } catch (_) {}
-        return value;
-    }
-
     function previous() {
         currentYear = (currentMonth === 0) ? currentYear - 1 : currentYear;
         currentMonth = (currentMonth === 0) ? 11 : currentMonth - 1;
@@ -813,16 +726,19 @@
                     const cell = document.createElement("td");
                     const btn = document.createElement("button");
                     btn.textContent = date;
-                    btn.className = "calendar-btn";
                     const thisDay = date; // captura o valor do dia atual
                     btn.addEventListener("click", (event) => selectCalendarDay(event.target, thisDay, month, year));
-                    const isToday = (date === today.getDate() && year === today.getFullYear() && month === today.getMonth());
-                    if (isToday && (selectedDay === null || (selectedDay === thisDay && selectedMonth === month && selectedYear === year))) {
-                        btn.classList.add("bg-info");
-                    }
-                    // Se este dia já está selecionado (ex: re-render), reatribuir classe
-                    if (selectedDay === thisDay && selectedMonth === month && selectedYear === year) {
-                        btn.classList.add('selected');
+                    const btnState = resolveCalendarButtonState({
+                        day: thisDay,
+                        month,
+                        year,
+                        today,
+                        selectedDay,
+                        selectedMonth,
+                        selectedYear
+                    });
+                    btn.className = btnState.classes.join(' ');
+                    if (btnState.isSelected) {
                         selectedButton = btn;
                     }
                     cell.appendChild(btn);

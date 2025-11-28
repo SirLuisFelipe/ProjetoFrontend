@@ -1,3 +1,28 @@
+const UsuariosHelperBundle = window.UsuariosHelpers || null;
+if (!UsuariosHelperBundle) {
+    console.error('UsuariosHelpers nao encontrado. Verifique se Assets/js/usuarios-helpers.js foi carregado antes de usuarios.js.');
+}
+
+const {
+    decodeRoleFromToken = () => null,
+    normalizeUser = (user) => ({
+        id: user?.id ?? null,
+        name: user?.name || '-',
+        cpf: user?.cpf || '-',
+        email: user?.email || '-',
+        role: user?.role || 'USER',
+        roleLabel: user?.role || 'USER',
+        raw: {
+            name: user?.name || '',
+            cpf: user?.cpf || '',
+            email: user?.email || '',
+            role: user?.role || 'USER'
+        }
+    }),
+    buildRoleOptions = () => [],
+    formatRoleLabel = (role) => role || ''
+} = UsuariosHelperBundle || {};
+
 document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("authToken");
     if (!token) {
@@ -5,17 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    function decodeRole() {
-        try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            const raw = payload.role || payload.authority || (payload.authorities && payload.authorities[0]);
-            return raw ? String(raw).toUpperCase() : null;
-        } catch (_) {
-            return null;
-        }
-    }
-
-    const role = decodeRole();
+    const role = decodeRoleFromToken(token);
     if (!role || !role.includes('ADMIN')) {
         alert('Acesso permitido apenas para administradores.');
         window.location.href = 'reserva.html';
@@ -49,22 +64,53 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const users = await response.json();
             const userContainer = document.querySelector(".user-list");
+            if (!userContainer) return;
             userContainer.innerHTML = "";
 
             users.forEach(user => {
+                const normalized = normalizeUser(user);
                 const userDiv = document.createElement("div");
                 userDiv.classList.add("user");
-                userDiv.innerHTML = `
-                    <span>${user.name}</span>
-                    <div class="user-actions">
-                        <button class="edit-btn" onclick="openEditModal(${user.id}, '${user.name}', '${user.cpf}', '${user.email}', '${user.role}')">
-                            <img src="../Assets/img/Icones genericos/Editar22.png" alt="Editar" class="icon"/>
-                        </button>
-                        <button class="lock-btn" onclick="deleteUser(${user.id})">
-                            <img src="../Assets/img/Icones genericos/Excluir22.png" alt="Excluir" class="icon"/>
-                        </button>
-                    </div>
-                `;
+
+                const infoSpan = document.createElement("span");
+                infoSpan.textContent = normalized.name;
+                userDiv.appendChild(infoSpan);
+
+                const actionsDiv = document.createElement("div");
+                actionsDiv.classList.add("user-actions");
+
+                const editBtn = document.createElement("button");
+                editBtn.classList.add("edit-btn");
+                editBtn.title = "Editar";
+                editBtn.addEventListener('click', () => {
+                    openEditModal(
+                        normalized.id,
+                        normalized.raw.name,
+                        normalized.raw.cpf,
+                        normalized.raw.email,
+                        normalized.raw.role
+                    );
+                });
+                const editImg = document.createElement("img");
+                editImg.src = "../Assets/img/Icones genericos/Editar22.png";
+                editImg.alt = "Editar";
+                editImg.classList.add("icon");
+                editBtn.appendChild(editImg);
+
+                const deleteBtn = document.createElement("button");
+                deleteBtn.classList.add("lock-btn");
+                deleteBtn.title = "Excluir";
+                deleteBtn.addEventListener('click', () => deleteUser(normalized.id));
+                const deleteImg = document.createElement("img");
+                deleteImg.src = "../Assets/img/Icones genericos/Excluir22.png";
+                deleteImg.alt = "Excluir";
+                deleteImg.classList.add("icon");
+                deleteBtn.appendChild(deleteImg);
+
+                actionsDiv.appendChild(editBtn);
+                actionsDiv.appendChild(deleteBtn);
+                userDiv.appendChild(actionsDiv);
+
                 userContainer.appendChild(userDiv);
             });
         } catch (error) {
@@ -87,25 +133,31 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     window.openEditModal = function(id, name, cpf, email, role) {
-        document.getElementById("editModal").style.display = "flex";
-        document.getElementById("userId").value = id;
-        document.getElementById("name").value = name;
-        document.getElementById("cpf").value = cpf;
-        document.getElementById("email").value = email;
+        const modal = document.getElementById("editModal");
+        if (!modal) return;
+        modal.style.display = "flex";
+        const userIdInput = document.getElementById("userId");
+        const nameInput = document.getElementById("name");
+        const cpfInput = document.getElementById("cpf");
+        const emailInput = document.getElementById("email");
 
-        const roleSelect = document.getElementById("role");
-        roleSelect.innerHTML = "";
+        if (userIdInput) userIdInput.value = id ?? '';
+        if (nameInput) nameInput.value = name || '';
+        if (cpfInput) cpfInput.value = cpf || '';
+        if (emailInput) emailInput.value = email || '';
 
-        const currentOption = document.createElement("option");
-        currentOption.value = role;
-        currentOption.textContent = role === "ADMIN" ? "Administrador" : "Usuário";
-        currentOption.selected = true;
-        roleSelect.appendChild(currentOption);
-
-        const alternateOption = document.createElement("option");
-        alternateOption.value = role === "ADMIN" ? "USER" : "ADMIN";
-        alternateOption.textContent = role === "ADMIN" ? "Usuário" : "Administrador";
-        roleSelect.appendChild(alternateOption);
+        const roleSelect = document.getElementById("editRoleSelect");
+        if (roleSelect) {
+            roleSelect.innerHTML = "";
+            const options = buildRoleOptions(role);
+            options.forEach(opt => {
+                const option = document.createElement("option");
+                option.value = opt.value;
+                option.textContent = opt.label;
+                if (opt.selected) option.selected = true;
+                roleSelect.appendChild(option);
+            });
+        }
     };
 
     window.closeEditModal = function() {

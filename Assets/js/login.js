@@ -1,4 +1,28 @@
-﻿// Função de login 
+﻿const LoginHelperBundle = window.LoginHelpers || {
+    resolvePasswordToggle: (type) => ({
+        nextType: type === 'password' ? 'text' : 'password',
+        iconSrc: type === 'password'
+            ? '../Assets/img/login/VerSenha.png'
+            : '../Assets/img/login/OcultarSenha.png'
+    }),
+    buildRegisterRoleOptions: () => [
+        { value: 'USER', label: 'Usuario' },
+        { value: 'ADMIN', label: 'Administrador' }
+    ],
+    isModalOpen: (modal) => {
+        if (!modal) return false;
+        const style = window.getComputedStyle ? getComputedStyle(modal) : null;
+        if (style) return style.display !== 'none';
+        return Boolean(modal.style && modal.style.display && modal.style.display !== 'none');
+    }
+};
+const {
+    resolvePasswordToggle,
+    buildRegisterRoleOptions,
+    isModalOpen: isModalOpenHelper
+} = LoginHelperBundle;
+
+// Função de login 
 const loginForm = document.getElementById("loginForm");
 if (loginForm) {
     loginForm.addEventListener("submit", async function(event) {
@@ -39,13 +63,10 @@ function togglePasswordVisibility() {
     const passwordField = document.getElementById("password");
     const icon = document.getElementById("icon-eye");
 
-    if (passwordField.type === "password") {
-        passwordField.type = "text";
-        icon.src = '../Assets/img/login/VerSenha.png';
-    } else {
-        passwordField.type = "password";
-        icon.src = '../Assets/img/login/OcultarSenha.png'; 
-    }
+    if (!passwordField || !icon) return;
+    const nextState = resolvePasswordToggle(passwordField.type);
+    passwordField.type = nextState.nextType;
+    icon.src = nextState.iconSrc;
 }
 
 // Abrir o modal de registro
@@ -53,19 +74,16 @@ function openRegisterModal() {
     const modal = document.getElementById("registerModal");
     modal.style.display = "flex";
 
-    const roleSelect = document.querySelector('#registerModal #role');
+    const roleSelect = document.querySelector('#registerModal #registerRoleSelect');
     if (roleSelect) {
         roleSelect.innerHTML = '';
-
-        const userOpt = document.createElement('option');
-        userOpt.value = 'USER';
-        userOpt.textContent = 'Usuario';
-        roleSelect.appendChild(userOpt);
-
-        const adminOpt = document.createElement('option');
-        adminOpt.value = 'ADMIN';
-        adminOpt.textContent = 'Administrador';
-        roleSelect.appendChild(adminOpt);
+        const options = buildRegisterRoleOptions();
+        options.forEach(opt => {
+            const optionEl = document.createElement('option');
+            optionEl.value = opt.value;
+            optionEl.textContent = opt.label;
+            roleSelect.appendChild(optionEl);
+        });
     }
 }
 
@@ -92,9 +110,7 @@ window.onclick = function(event) {
 // Atalhos de teclado quando o modal esta aberto
 function isRegisterModalOpen() {
     const modal = document.getElementById('registerModal');
-    if (!modal) return false;
-    const style = window.getComputedStyle ? getComputedStyle(modal) : null;
-    return style ? style.display !== 'none' : (modal.style.display && modal.style.display !== 'none');
+    return isModalOpenHelper(modal);
 }
 
 document.addEventListener('keydown', function(e) {
@@ -127,7 +143,7 @@ if (registerForm) {
         const password = document.getElementById("registerPassword").value;
 
         // Role sera passado como "User" por padrao quando o usuario for criado pela tela de login
-        const roleSelect = document.querySelector('#registerModal #role');
+        const roleSelect = document.querySelector('#registerModal #registerRoleSelect');
         const selectedRole = roleSelect && roleSelect.value ? roleSelect.value : "User";
 
         const userData = {

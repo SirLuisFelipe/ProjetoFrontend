@@ -52,6 +52,21 @@ Caso o backend esteja em outro endereço, atualize a constante `API_BASE_URL` no
 
 Com isso você já consegue rodar o frontend em qualquer ambiente sem precisar de builds adicionais.
 
+## Testes
+O projeto utiliza [Jest](https://jestjs.io/) para cobrir utilitários da tela de reservas (funções de formatação e normalização em `Assets/js/reserva-helpers.js`).
+
+### Executar localmente
+1. Garanta que tenha Node.js 18+ instalado.
+2. Instale as dependências:
+   ```bash
+   npm install
+   ```
+3. Rode os testes:
+   ```bash
+   npm test
+   ```
+Os relatórios LCOV são gerados automaticamente em `coverage/lcov.info` pelo próprio Jest, podendo ser enviados ao SonarCloud.
+
 ## Análise no SonarCloud
 O arquivo `sonar-project.properties` já aponta para o projeto **SirLuisFelipe_ProjetoFrontend** dentro da organização **sirluisfelipe** no SonarCloud. Ele também guarda o token informado pelo usuário para permitir a execução local do scanner.
 

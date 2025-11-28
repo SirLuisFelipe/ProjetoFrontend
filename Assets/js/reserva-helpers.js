@@ -1,0 +1,245 @@
+(function (global) {
+    function isAdminRole(role) {
+        if (!role) return false;
+        const r = String(role).toUpperCase();
+        return r.includes('ADMIN');
+    }
+
+    function extractItems(data) {
+        if (Array.isArray(data)) return data;
+        if (!data || typeof data !== 'object') return [];
+        if (Array.isArray(data.content)) return data.content;
+        return [];
+    }
+
+    function formatCheckinStatus(value) {
+        if (value === undefined || value === null || value === '') return '-';
+        const normalized = String(value).toUpperCase();
+        if (normalized === 'PENDENTE') return 'Pendente';
+        if (normalized === 'NAO_REALIZADO') return 'Não Realizado';
+        if (normalized === 'REALIZADO') return 'Realizado';
+        if (normalized === 'CANCELADO') return 'Cancelado';
+        return value;
+    }
+
+    function buildKey(yyyy, mm, dd, pad) {
+        const year = Number(yyyy);
+        const month = Number(mm);
+        const day = Number(dd);
+        if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) return null;
+        if (month < 1 || month > 12) return null;
+        if (day < 1 || day > 31) return null;
+        return `${year}-${pad(month)}-${pad(day)}`;
+    }
+
+    function getDateKey(value) {
+        if (!value) return null;
+        const pad = num => String(num).padStart(2, '0');
+        try {
+            if (typeof value === 'string') {
+                const cleaned = value.split('T')[0].split(' ')[0];
+                const dashParts = cleaned.split('-');
+                if (dashParts.length === 3) {
+                    if (dashParts[0].length === 4) {
+                        const [yyyy, mm, dd] = dashParts;
+                        const key = buildKey(yyyy, mm, dd, pad);
+                        if (key) return key;
+                    }
+                    if (dashParts[2].length === 4) {
+                        const [dd, mm, yyyy] = dashParts;
+                        const key = buildKey(yyyy, mm, dd, pad);
+                        if (key) return key;
+                    }
+                }
+                const slashParts = cleaned.split('/');
+                if (slashParts.length === 3) {
+                    if (slashParts[0].length === 4) {
+                        const [yyyy, mm, dd] = slashParts;
+                        const key = buildKey(yyyy, mm, dd, pad);
+                        if (key) return key;
+                    } else if (slashParts[2].length === 4) {
+                        const [dd, mm, yyyy] = slashParts;
+                        const key = buildKey(yyyy, mm, dd, pad);
+                        if (key) return key;
+                    }
+                }
+            }
+            if (value instanceof Date) {
+                if (isNaN(value)) return null;
+                return buildKey(value.getFullYear(), value.getMonth() + 1, value.getDate(), pad);
+            }
+            const asDate = new Date(value);
+            if (!isNaN(asDate)) {
+                return buildKey(asDate.getFullYear(), asDate.getMonth() + 1, asDate.getDate(), pad);
+            }
+        } catch (_) {
+            return null;
+        }
+        return null;
+    }
+
+    function getCheckinStatus(schedule) {
+        if (!schedule) return undefined;
+        if (schedule.checkinStatus !== undefined && schedule.checkinStatus !== null) {
+            return schedule.checkinStatus;
+        }
+        return undefined;
+    }
+
+    function displayTurno(value) {
+        if (value === undefined || value === null) return '-';
+        const normalized = String(value).toUpperCase();
+        if (normalized.includes('MATUTINO') || normalized === 'MANHA' || normalized === 'MANHÃ') return 'Manha';
+        if (normalized.includes('VESPERTINO') || normalized === 'TARDE') return 'Tarde';
+        if (normalized.includes('NOTURNO') || normalized === 'NOITE') return 'Noite';
+        return value;
+    }
+
+    function formatDate(value) {
+        if (!value && value !== 0) return '-';
+        const pad = num => String(num).padStart(2, '0');
+        try {
+            if (typeof value === 'string') {
+                const cleaned = value.split('T')[0].split(' ')[0];
+                const dashParts = cleaned.split('-');
+                if (dashParts.length === 3) {
+                    if (dashParts[0].length === 4) {
+                        const [yyyy, mm, dd] = dashParts;
+                        return `${pad(dd)}/${pad(mm)}/${yyyy}`;
+                    }
+                    if (dashParts[2].length === 4) {
+                        const [dd, mm, yyyy] = dashParts;
+                        return `${pad(dd)}/${pad(mm)}/${yyyy}`;
+                    }
+                }
+                const slashParts = cleaned.split('/');
+                if (slashParts.length === 3) {
+                    const [dd, mm, yyyy] = slashParts;
+                    return `${pad(dd)}/${pad(mm)}/${yyyy}`;
+                }
+            }
+            const date = new Date(value);
+            if (!isNaN(date)) {
+                return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
+            }
+        } catch (_) {}
+        return value;
+    }
+
+    function isPastDate(day, month, year, referenceDate = new Date()) {
+        try {
+            const selected = new Date(year, month, day, 0, 0, 0, 0);
+            const today = new Date(referenceDate.getFullYear(), referenceDate.getMonth(), referenceDate.getDate(), 0, 0, 0, 0);
+            return selected.getTime() < today.getTime();
+        } catch (_) {
+            return false;
+        }
+    }
+
+    function computeOpenButtonState(options) {
+        const {
+            selectedDay,
+            selectedMonth,
+            selectedYear,
+            requireCheckinResolution,
+            referenceDate = new Date()
+        } = options;
+
+        const hasSelection = (
+            selectedDay !== null &&
+            selectedMonth !== null &&
+            selectedYear !== null
+        );
+        const past = hasSelection
+            ? isPastDate(selectedDay, selectedMonth, selectedYear, referenceDate)
+            : false;
+        const blocked = Boolean(requireCheckinResolution);
+        const disabled = !hasSelection || past || blocked;
+        const title = blocked
+            ? 'Finalize o status do check-in pendente antes de agendar novamente.'
+            : null;
+        return { disabled, title };
+    }
+
+    function resolveCalendarButtonState({
+        day,
+        month,
+        year,
+        today,
+        selectedDay,
+        selectedMonth,
+        selectedYear
+    }) {
+        const classes = ['calendar-btn'];
+        const isToday = (
+            day === today.getDate() &&
+            month === today.getMonth() &&
+            year === today.getFullYear()
+        );
+        const isSelected = (
+            selectedDay === day &&
+            selectedMonth === month &&
+            selectedYear === year
+        );
+        if (isToday && (selectedDay === null || isSelected)) {
+            classes.push('bg-info');
+        }
+        if (isSelected) {
+            classes.push('selected');
+        }
+        return { isToday, isSelected, classes };
+    }
+
+    function sortSchedulesByDate(items, getDateKeyFn = getDateKey) {
+        if (!Array.isArray(items)) return [];
+        return items.slice().sort((a, b) => {
+            const keyA = getDateKeyFn(a?.scheduledDate);
+            const keyB = getDateKeyFn(b?.scheduledDate);
+            if (!keyA && !keyB) return 0;
+            if (!keyA) return 1;
+            if (!keyB) return -1;
+            return keyA.localeCompare(keyB);
+        });
+    }
+
+    function normalizeScheduleRow(item, {
+        formatDateFn = formatDate,
+        displayTurnoFn = displayTurno,
+        formatCheckinStatusFn = formatCheckinStatus,
+        getCheckinStatusFn = getCheckinStatus
+    } = {}) {
+        const safeText = (value) => (value === undefined || value === null || value === '' ? '-' : value);
+        const checkinRaw = getCheckinStatusFn(item);
+        return {
+            name: safeText(item?.user?.name),
+            email: safeText(item?.user?.email),
+            track: safeText(item?.track?.name),
+            turno: displayTurnoFn(item?.turno),
+            checkin: formatCheckinStatusFn(checkinRaw),
+            date: (item?.scheduledDate === undefined || item?.scheduledDate === null)
+                ? '-'
+                : formatDateFn(item?.scheduledDate)
+        };
+    }
+
+    const helpers = {
+        isAdminRole,
+        extractItems,
+        formatCheckinStatus,
+        getDateKey,
+        getCheckinStatus,
+        displayTurno,
+        formatDate,
+        isPastDate,
+        computeOpenButtonState,
+        resolveCalendarButtonState,
+        sortSchedulesByDate,
+        normalizeScheduleRow
+    };
+
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = helpers;
+    } else {
+        global.ReservaHelpers = helpers;
+    }
+})(typeof window !== 'undefined' ? window : globalThis);
