@@ -5,7 +5,7 @@ Interface web usada para consumir os endpoints do sistema de reservas. O projeto
 ## Requisitos
 - Navegador moderno (Chrome, Edge, Firefox, etc.)
 - Opcional para servir os arquivos localmente: [Node.js 18+](https://nodejs.org/) ou alguma extensão que rode um servidor HTTP simples (ex.: Live Server no VS Code)
-- Backend rodando em `http://localhost:8080/reservation` (o frontend espera esse endereço por padrão)
+- Backend rodando em `http://localhost:8080/reservation` (ambiente local) ou disponível publicamente em `http://99.79.51.142:8080/reservation` (produção). O frontend detecta automaticamente qual usar com base no hostname atual.
 
 ## Como Rodar Localmente
 
@@ -13,7 +13,7 @@ Interface web usada para consumir os endpoints do sistema de reservas. O projeto
 1. Abra esta pasta no VS Code.
 2. Instale a extensão **Live Server**.
 3. Clique com o botão direito no arquivo `pages/reserva.html` e escolha **Open with Live Server**.
-4. O navegador abrirá automaticamente (por padrão na porta `5500`), e o frontend já estará apontando para o backend em `http://localhost:8080/reservation`.
+4. O navegador abrirá automaticamente (por padrão na porta `5500`). Em ambiente local o frontend aponta para `http://localhost:8080/reservation`; ao publicar (ex.: Vercel) ele passa a consumir `http://99.79.51.142:8080/reservation`.
 
 ### Opção 2 — Servidor HTTP via Node.js
 1. Na raiz do projeto, instale (uma única vez) o pacote `http-server`:

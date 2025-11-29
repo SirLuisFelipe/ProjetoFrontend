@@ -1,3 +1,10 @@
+const DASHBOARD_DEFAULT_API_BASE_URL = (() => {
+    const hostname = String(globalThis?.location?.hostname || '').toLowerCase();
+    const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
+    return isLocal
+        ? 'http://localhost:8080/reservation'
+        : 'http://99.79.51.142:8080/reservation';
+})();
 const DashboardHelperBundle = globalThis.DashboardHelpers || {
     decodeTokenRole: () => null,
     decodeUserId: () => null,
@@ -19,7 +26,7 @@ const {
 } = DashboardHelperBundle;
 
 document.addEventListener('DOMContentLoaded', () => {
-    const API_BASE_URL = 'http://localhost:8080/reservation';
+    const API_BASE_URL = globalThis.API_BASE_URL || DASHBOARD_DEFAULT_API_BASE_URL;
     const token = localStorage.getItem('authToken');
 
     if (!token) {

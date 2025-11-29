@@ -1,4 +1,11 @@
 const rootScope = typeof window !== 'undefined' ? window : globalThis;
+const DEFAULT_API_BASE_URL = (() => {
+    const hostname = String(rootScope?.location?.hostname || '').toLowerCase();
+    const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+    return isLocalhost
+        ? 'http://localhost:8080/reservation'
+        : 'http://99.79.51.142:8080/reservation';
+})();
 const ReservaHelperBundle = rootScope.ReservaHelpers || null;
 if (!ReservaHelperBundle) {
     console.error('ReservaHelpers nao encontrado. Verifique se Assets/js/reserva-helpers.js foi carregado antes de reserva.js.');
@@ -31,7 +38,7 @@ const {
 document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("authToken");
 
-    const API_BASE_URL = 'http://localhost:8080/reservation';
+    const API_BASE_URL = rootScope.API_BASE_URL || DEFAULT_API_BASE_URL;
 
     // Funcao para obter a role do usuario a partir do token
     function getUserRoleFromToken() {

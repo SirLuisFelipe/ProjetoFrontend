@@ -1,4 +1,13 @@
-﻿const LoginHelperBundle = window.LoginHelpers || {
+﻿const loginRootScope = typeof window !== 'undefined' ? window : globalThis;
+const LOGIN_DEFAULT_API_BASE_URL = (() => {
+    const hostname = String(loginRootScope?.location?.hostname || '').toLowerCase();
+    const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+    return isLocalhost
+        ? 'http://localhost:8080/reservation'
+        : 'http://99.79.51.142:8080/reservation';
+})();
+const LOGIN_API_BASE_URL = loginRootScope.API_BASE_URL || LOGIN_DEFAULT_API_BASE_URL;
+const LoginHelperBundle = loginRootScope.LoginHelpers || {
     resolvePasswordToggle: (type) => ({
         nextType: type === 'password' ? 'text' : 'password',
         iconSrc: type === 'password'
@@ -33,7 +42,7 @@ if (loginForm) {
 
         // Executa login com o backend
         try {
-            const response = await fetch("http://localhost:8080/reservation/auth/login", {
+            const response = await fetch(`${LOGIN_API_BASE_URL}/auth/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -155,7 +164,7 @@ if (registerForm) {
         };
 
         try {
-            const response = await fetch("http://localhost:8080/reservation/auth/register", {
+            const response = await fetch(`${LOGIN_API_BASE_URL}/auth/register`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

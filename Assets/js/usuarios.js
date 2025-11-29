@@ -1,4 +1,12 @@
-const UsuariosHelperBundle = window.UsuariosHelpers || null;
+const usuariosRootScope = typeof window !== 'undefined' ? window : globalThis;
+const USUARIOS_DEFAULT_API_BASE_URL = (() => {
+    const hostname = String(usuariosRootScope?.location?.hostname || '').toLowerCase();
+    const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+    return isLocalhost
+        ? 'http://localhost:8080/reservation'
+        : 'http://99.79.51.142:8080/reservation';
+})();
+const UsuariosHelperBundle = usuariosRootScope.UsuariosHelpers || null;
 if (!UsuariosHelperBundle) {
     console.error('UsuariosHelpers nao encontrado. Verifique se Assets/js/usuarios-helpers.js foi carregado antes de usuarios.js.');
 }
@@ -26,6 +34,7 @@ const {
 } = UsuariosHelperBundle || {};
 
 document.addEventListener("DOMContentLoaded", () => {
+    const API_BASE_URL = usuariosRootScope.API_BASE_URL || USUARIOS_DEFAULT_API_BASE_URL;
     const token = localStorage.getItem("authToken");
     if (!token) {
         window.location.href = "login.html";
@@ -50,8 +59,8 @@ document.addEventListener("DOMContentLoaded", () => {
     async function fetchUsers(name = "") {
         try {
             const url = name
-                ? `http://localhost:8080/reservation/user/search?name=${name}`
-                : `http://localhost:8080/reservation/user/`;
+                ? `${API_BASE_URL}/user/search?name=${encodeURIComponent(name)}`
+                : `${API_BASE_URL}/user/`;
             const response = await fetch(url, {
                 method: "GET",
                 headers: {
@@ -142,7 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         try {
-            const response = await fetch(`http://localhost:8080/reservation/user/`, {
+            const response = await fetch(`${API_BASE_URL}/user/`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -170,7 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function deleteUser(id) {
         try {
-            const response = await fetch(`http://localhost:8080/reservation/user/id/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/user/id/${id}`, {
                 method: "DELETE",
                 headers: {
                     "Authorization": `Bearer ${token}`
