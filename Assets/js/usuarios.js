@@ -4,7 +4,7 @@ const USUARIOS_DEFAULT_API_BASE_URL = (() => {
     const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
     return isLocalhost
         ? 'http://localhost:8080/reservation'
-        : 'http://99.79.51.142:8080/reservation';
+        : '/api/backend';
 })();
 const UsuariosHelperBundle = usuariosRootScope.UsuariosHelpers || null;
 if (!UsuariosHelperBundle) {

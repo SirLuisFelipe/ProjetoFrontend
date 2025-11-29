@@ -3,7 +3,7 @@ const DASHBOARD_DEFAULT_API_BASE_URL = (() => {
     const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
     return isLocal
         ? 'http://localhost:8080/reservation'
-        : 'http://99.79.51.142:8080/reservation';
+        : '/api/backend';
 })();
 const DashboardHelperBundle = globalThis.DashboardHelpers || {
     decodeTokenRole: () => null,

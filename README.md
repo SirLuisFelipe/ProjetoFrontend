@@ -5,7 +5,7 @@ Interface web usada para consumir os endpoints do sistema de reservas. O projeto
 ## Requisitos
 - Navegador moderno (Chrome, Edge, Firefox, etc.)
 - Opcional para servir os arquivos localmente: [Node.js 18+](https://nodejs.org/) ou alguma extensão que rode um servidor HTTP simples (ex.: Live Server no VS Code)
-- Backend rodando em `http://localhost:8080/reservation` (ambiente local) ou disponível publicamente em `http://99.79.51.142:8080/reservation` (produção). O frontend detecta automaticamente qual usar com base no hostname atual.
+- Backend rodando em `http://localhost:8080/reservation` (ambiente local). Em ambientes publicados (ex.: Vercel) usamos um proxy HTTPS (`/api/backend`) que encaminha as chamadas para o endereco definido na variavel `BACKEND_BASE_URL`.
 
 ## Como Rodar Localmente
 
@@ -13,7 +13,7 @@ Interface web usada para consumir os endpoints do sistema de reservas. O projeto
 1. Abra esta pasta no VS Code.
 2. Instale a extensão **Live Server**.
 3. Clique com o botão direito no arquivo `pages/reserva.html` e escolha **Open with Live Server**.
-4. O navegador abrirá automaticamente (por padrão na porta `5500`). Em ambiente local o frontend aponta para `http://localhost:8080/reservation`; ao publicar (ex.: Vercel) ele passa a consumir `http://99.79.51.142:8080/reservation`.
+4. O navegador abrira automaticamente (por padrao na porta `5500`). Em ambiente local o frontend aponta para `http://localhost:8080/reservation`; ao publicar (ex.: Vercel) ele passa a consumir `/api/backend`, que o proxy serverless encaminha para o backend definido em `BACKEND_BASE_URL`.
 
 ### Opção 2 — Servidor HTTP via Node.js
 1. Na raiz do projeto, instale (uma única vez) o pacote `http-server`:
@@ -44,7 +44,18 @@ O frontend utiliza a API exposta pelo backend. Alguns dos endpoints principais:
 - Reservas: `/scheduling/`, `/scheduling/user/{id}`, `/scheduling/{id}/status`
 - Indicadores: `/scheduling/analytics/*` (pista, pagamento, usuário, timeline, cancellations, day-range)
 
-Caso o backend esteja em outro endereço, atualize a constante `API_BASE_URL` nos arquivos `.js` correspondentes.
+Caso o backend esteja em outro endereco:
+- Localmente: ajuste temporariamente as constantes `API_BASE_URL` nos arquivos `.js` (ou defina `window.API_BASE_URL` antes de carregar as p?ginas).
+- Deploy na Vercel: atualize a variavel de ambiente `BACKEND_BASE_URL` e realize um novo deploy; o proxy `/api/backend/*` encaminhara todas as chamadas HTTPS automaticamente.
+
+## Proxy HTTPS no deploy (Vercel)
+- A pasta `api/backend/[...path].js` define uma Serverless Function que replica o m?todo, headers e corpo da requisi??o, encaminhando-os para `process.env.BACKEND_BASE_URL` e devolvendo o status/resposta para o browser.
+- Dessa forma evitamos erros de *mixed content*: o navegador fala somente com `https://<dominio>/api/backend/...`, enquanto a fun??o usa HTTP para conversar com o backend real.
+- Como configurar:
+  1. No dashboard da Vercel, abra **Settings ? Environment Variables** do projeto.
+  2. Defina `BACKEND_BASE_URL` (Preview/Production) apontando para `http://99.79.51.142:8080/reservation` ou qualquer outro endpoint do backend.
+  3. Rode um novo deploy (push ou `vercel --prod`). N?o ? preciso alterar os arquivos do frontend.
+  4. Sempre que o IP ou porta mudar, atualize apenas essa vari?vel e redeploye.
 
 ## Dicas
 - Se precisar simular dados, suba o backend com Docker conforme README do repositório backend e execute o script SQL de seed.
