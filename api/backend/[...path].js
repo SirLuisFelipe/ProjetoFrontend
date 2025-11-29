@@ -13,13 +13,7 @@ const HOP_BY_HOP_HEADERS = new Set([
     'content-length'
 ]);
 
-export const config = {
-    api: {
-        bodyParser: false
-    }
-};
-
-export default async function handler(req, res) {
+async function handler(req, res) {
     const backendBase = process.env.BACKEND_BASE_URL;
     if (!backendBase) {
         res.status(500).json({ error: 'BACKEND_BASE_URL not configured' });
@@ -28,8 +22,8 @@ export default async function handler(req, res) {
 
     const queryPath = req.query.path;
     const path = Array.isArray(queryPath) ? queryPath.join('/') : (queryPath || '');
-    const idx = req.url.indexOf('?');
-    const search = idx >= 0 ? req.url.slice(idx) : '';
+    const queryIndex = req.url.indexOf('?');
+    const search = queryIndex >= 0 ? req.url.slice(queryIndex) : '';
 
     const normalizedBase = backendBase.endsWith('/') ? backendBase.slice(0, -1) : backendBase;
     const normalizedPath = path ? `/${path}` : '';
@@ -42,13 +36,13 @@ export default async function handler(req, res) {
         }
     });
 
+    const method = (req.method || 'GET').toUpperCase();
     const init = {
-        method: req.method,
+        method,
         headers,
         redirect: 'manual'
     };
 
-    const method = (req.method || 'GET').toUpperCase();
     if (method !== 'GET' && method !== 'HEAD') {
         init.body = req;
     }
@@ -71,12 +65,22 @@ export default async function handler(req, res) {
     });
 
     if (backendResponse.body) {
-        const nodeStream = typeof backendResponse.body.pipe === 'function'
+        const stream = typeof backendResponse.body.pipe === 'function'
             ? backendResponse.body
-            : Readable.fromWeb(backendResponse.body);
-        nodeStream.pipe(res);
-    } else {
-        const buffer = Buffer.from(await backendResponse.arrayBuffer());
-        res.send(buffer);
+            : (Readable.fromWeb ? Readable.fromWeb(backendResponse.body) : null);
+        if (stream) {
+            stream.pipe(res);
+            return;
+        }
     }
+
+    const buffer = Buffer.from(await backendResponse.arrayBuffer());
+    res.send(buffer);
 }
+
+module.exports = handler;
+module.exports.config = {
+    api: {
+        bodyParser: false
+    }
+};
