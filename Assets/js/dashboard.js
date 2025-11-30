@@ -30,14 +30,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('authToken');
 
     if (!token) {
-        globalThis.location.href = 'login.html';
+        globalThis.location.href = '/pages/login.html';
         return;
     }
 
     const role = decodeTokenRole(token);
     if (!role || !role.includes('ADMIN')) {
         alert('Acesso permitido apenas para administradores.');
-        globalThis.location.href = 'reserva.html';
+        globalThis.location.href = '/pages/reserva.html';
         return;
     }
 
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (manageUsersButton) {
         manageUsersButton.style.display = 'block';
         manageUsersButton.addEventListener('click', () => {
-            globalThis.location.href = 'usuarios.html';
+            globalThis.location.href = '/pages/usuarios.html';
         });
     }
 
@@ -351,5 +351,5 @@ function logout() {
     try {
         localStorage.removeItem('authToken');
     } catch (error) {}
-    globalThis.location.href = 'login.html';
+    globalThis.location.href = '/pages/login.html';
 }

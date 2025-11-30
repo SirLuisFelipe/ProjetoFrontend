@@ -87,13 +87,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (manageUsersButton) {
             manageUsersButton.style.display = "block";
             manageUsersButton.addEventListener('click', () => {
-                rootScope.location.href = 'usuarios.html';
+                rootScope.location.href = '/pages/usuarios.html';
             });
         }
         if (viewDashboardsButton) {
             viewDashboardsButton.style.display = "block";
             viewDashboardsButton.addEventListener('click', () => {
-                rootScope.location.href = 'dashboard.html';
+                rootScope.location.href = '/pages/dashboard.html';
             });
         }
     } else {
@@ -107,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!tableBody) return; // tabela pode não existir
 
         if (!token) {
-            rootScope.location.href = 'login.html';
+            rootScope.location.href = '/pages/login.html';
             return;
         }
 
@@ -391,7 +391,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const authToken = localStorage.getItem('authToken');
         if (!authToken) {
             alert('Sessão expirada. Faça login novamente.');
-            rootScope.location.href = 'login.html';
+            rootScope.location.href = '/pages/login.html';
             return;
         }
 
@@ -827,7 +827,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const token = localStorage.getItem('authToken');
         if (!token) {
             alert('Sessão expirada. Faça login novamente.');
-            rootScope.location.href = 'login.html';
+            rootScope.location.href = '/pages/login.html';
             return;
         }
 
@@ -1141,7 +1141,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const token = localStorage.getItem('authToken');
         if (!token) {
             alert('Sessão expirada. Faça login novamente.');
-            rootScope.location.href = 'login.html';
+            rootScope.location.href = '/pages/login.html';
             return;
         }
 
@@ -1199,7 +1199,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const token = localStorage.getItem('authToken');
         if (!token) {
             alert('Sessão expirada. Faça login novamente.');
-            rootScope.location.href = 'login.html';
+            rootScope.location.href = '/pages/login.html';
             return;
         }
         const baseUrl = API_BASE_URL;
@@ -1256,7 +1256,7 @@ rootScope.logout = function() {
     } catch (e) {
         // ignora erros de storage
     }
-    rootScope.location.href = "login.html";
+    rootScope.location.href = "/pages/login.html";
 };
 
 

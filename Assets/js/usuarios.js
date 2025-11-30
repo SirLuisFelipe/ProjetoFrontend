@@ -37,21 +37,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const API_BASE_URL = usuariosRootScope.API_BASE_URL || USUARIOS_DEFAULT_API_BASE_URL;
     const token = localStorage.getItem("authToken");
     if (!token) {
-        window.location.href = "login.html";
+        window.location.href = "/pages/login.html";
         return;
     }
 
     const role = decodeRoleFromToken(token);
     if (!role || !role.includes('ADMIN')) {
         alert('Acesso permitido apenas para administradores.');
-        window.location.href = 'reserva.html';
+        window.location.href = '/pages/reserva.html';
         return;
     }
 
     const navReservations = document.getElementById('navReservations');
     const navDashboard = document.getElementById('navDashboard');
-    if (navReservations) navReservations.addEventListener('click', () => window.location.href = 'reserva.html');
-    if (navDashboard) navDashboard.addEventListener('click', () => window.location.href = 'dashboard.html');
+    if (navReservations) navReservations.addEventListener('click', () => window.location.href = '/pages/reserva.html');
+    if (navDashboard) navDashboard.addEventListener('click', () => window.location.href = '/pages/dashboard.html');
 
     const searchInput = document.getElementById("searchInput");
     const searchButton = document.getElementById("searchButton");
@@ -134,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             localStorage.removeItem("authToken");
         } catch (e) {}
-        window.location.href = "login.html";
+        window.location.href = "/pages/login.html";
     };
 
     async function updateUser(event) {

@@ -60,7 +60,7 @@ if (loginForm) {
             localStorage.setItem("authToken", data.token); 
 
             // Redireciona para a pagina principal apos login bem-sucedido
-            window.location.href = "reserva.html";
+            window.location.href = "/pages/reserva.html";
         } catch (error) {
             alert("Erro: " + error.message);
         }
