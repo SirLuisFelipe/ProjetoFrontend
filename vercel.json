@@ -2,7 +2,7 @@
   "version": 2,
   "functions": {
     "api/backend/[...path].js": {
-      "runtime": "nodejs18.x"
+      "runtime": "vercel-nodejs@18.20.1"
     }
   },
   "rewrites": [
