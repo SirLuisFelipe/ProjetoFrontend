@@ -13,6 +13,15 @@ const HOP_BY_HOP_HEADERS = new Set([
     'content-length'
 ]);
 
+function collectBody(req) {
+    return new Promise((resolve, reject) => {
+        const chunks = [];
+        req.on('data', chunk => chunks.push(chunk));
+        req.on('end', () => resolve(Buffer.concat(chunks)));
+        req.on('error', reject);
+    });
+}
+
 async function handler(req, res) {
     const backendBase = process.env.BACKEND_BASE_URL;
     if (!backendBase) {
@@ -44,13 +53,20 @@ async function handler(req, res) {
     };
 
     if (method !== 'GET' && method !== 'HEAD') {
-        init.body = req;
+        try {
+            init.body = await collectBody(req);
+        } catch (err) {
+            console.error('Proxy: failed to read request body', err);
+            res.status(500).json({ error: 'Failed to read request body' });
+            return;
+        }
     }
 
     let backendResponse;
     try {
         backendResponse = await fetch(targetUrl, init);
     } catch (error) {
+        console.error('Proxy: fetch failed', targetUrl, error);
         res.status(502).json({ error: 'Failed to reach backend', details: error.message });
         return;
     }
