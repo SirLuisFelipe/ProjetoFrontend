@@ -1,11 +1,14 @@
 {
   "version": 2,
-  "functions": {
-    "api/backend/[...path].js": {
-      "runtime": "vercel-nodejs@18.20.1"
-    }
-  },
-  "rewrites": [
-    { "source": "/", "destination": "/pages/login.html" }
+  "builds": [
+    { "src": "api/backend/[...path].js", "use": "@vercel/node@2" },
+    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "pages/**/*.html", "use": "@vercel/static" },
+    { "src": "Assets/**/*", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/backend/(.*)", "dest": "/api/backend/$1" },
+    { "src": "/", "dest": "/pages/login.html" },
+    { "src": "/(.*)", "dest": "/$1" }
   ]
 }
