@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "api/backend/[...path].js": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "rewrites": [
+    { "source": "/", "destination": "/pages/login.html" }
+  ]
+}
