@@ -1,12 +1,29 @@
 ﻿body {
     font-family: Arial, sans-serif;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 100vh;
     margin: 0;
     background-color: #1A1B33;
     color: #ffffff;
+}
+
+.login-hero {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.login-hero h1 {
+    margin: 0;
+    font-size: 38px;
+}
+
+.login-hero p {
+    margin: 5px 0 0;
+    color: #cfd2ff;
+    font-size: 15px;
 }
 
 .login-container {
